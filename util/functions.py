@@ -117,9 +117,7 @@ def hash_join(**kwargs):
     }
     """
     # initial join
-    join = base_hash_join(kwargs["build_r_1"], kwargs["probe_r_1"], kwargs["build_key_1"], kwargs["probe_key_1"])
-    res = [list(i) for i in join]
     for i in range(1, kwargs["num_joins"]+1):
-        join = base_hash_join(join, kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"])
-
+        join = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"])
+    # todo how to implement the conjuctions
     return join
