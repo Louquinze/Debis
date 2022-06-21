@@ -4,5 +4,5 @@ import warnings
 warnings.filterwarnings("ignore")
 partitions = get_vertical_partitions(["userId", "follows", "friendOf", "likes", "hasReview"])
 for key in partitions:
-    pa = partitions[key].head(100)
-    print(f"{key}:\n{pa}\n\n")
+    pa = partitions[key]
+    print(f"\n\n\n{key}:\n{pa}\n\n\n\n\n")

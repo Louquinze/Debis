@@ -1,5 +1,4 @@
 import re
-import pandas as pd
 
 
 def get_user_properties():
@@ -37,7 +36,7 @@ def get_user_properties():
 def get_vertical_partitions(keys):
     # edges: follows, friendOf, likes, hasReview
     # nodes: User, Review
-    partitions = {key: pd.DataFrame({"subject": [], "object": []}) for key in keys}
+    partitions = {key: list() for key in keys}
 
     file1 = open('100k.txt', 'r')
     Lines = file1.readlines()
@@ -64,7 +63,10 @@ def get_vertical_partitions(keys):
         content = text.split(" ", 2)
         # Todo Map subject and object to numbers, maybe possible in same loop
         if content[1] in keys:
-            partitions[content[1]] = partitions[content[1]].append(
-                pd.Series({"subject": content[0], "object": content[2]}, name=3))
+            partitions[content[1]].append((content[0], content[2]))
 
     return partitions
+
+
+def base_hash_join(relation_a, relation_b, key_1, key_2):
+    raise NotImplementedError
