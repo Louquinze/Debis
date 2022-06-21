@@ -1,8 +1,9 @@
-from util.functions import get_user_properties, get_vertical_partitions
+from util.functions import get_user_properties, get_vertical_partitions, base_hash_join
 import warnings
 
 warnings.filterwarnings("ignore")
-partitions = get_vertical_partitions(["follows", "friendOf"])
-for key in partitions:
-    pa = partitions[key]
-    print(f"\n\n\n{key}:\n{pa}\n\n\n\n\n")
+partitions = get_vertical_partitions(["likes", "hasReview"])
+print(partitions)
+join = base_hash_join(partitions["likes"], partitions["hasReview"], "object", "subject")
+
+print(join)
