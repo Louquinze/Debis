@@ -88,3 +88,38 @@ def base_hash_join(build_r, probe_r, build_key, probe_key):
                 join.append((hash_table[object], subject))
 
     return join
+
+def hash_join(**kwargs):
+    """
+    use concatenation of base_hash_join to join multiple relations (subject, object)
+    --> how to define this ? --> work with args
+
+    def func_kwargs(**kwargs):
+    print('kwargs: ', kwargs)
+    print('type: ', type(kwargs))
+
+    func_kwargs(key1=1, key2=2, key3=3)
+    # kwargs:  {'key1': 1, 'key2': 2, 'key3': 3}
+    # type:  <class 'dict'>
+
+    --> indice build_r, probe_r, build_key, probe_key
+    kwargs = {
+        "build_r_init": partitions["follows"],
+        "probe_r_1": partitions["friendOf"],
+        "build_key_1": "object",
+        "probe_key_1": "subject",
+        "probe_r_2": partitions["likes"],
+        "build_key_2": "object",
+        "probe_key_2": "subject",
+        "probe_r_3": partitions["hasReview"],
+        "build_key_3": "object",
+        "probe_key_3": "subject",
+    }
+    """
+    # initial join
+    join = base_hash_join(kwargs["build_r_1"], kwargs["probe_r_1"], kwargs["build_key_1"], kwargs["probe_key_1"])
+    res = [list(i) for i in join]
+    for i in range(1, kwargs["num_joins"]+1):
+        join = base_hash_join(join, kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"])
+
+    return join
