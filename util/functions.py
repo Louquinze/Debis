@@ -68,5 +68,10 @@ def get_vertical_partitions(keys):
     return partitions
 
 
-def base_hash_join():
+def base_hash_join(build_r, probe_r, build_key, probe_key):
+    # Todo Build phase, map (hash table) join key of relation 1 to the remaining attr.
+
+
+    # Todo Probe phase, look up the new tuples by checking the hash table H(hash_func(key_2))
+
     raise NotImplementedError
