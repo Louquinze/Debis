@@ -68,5 +68,5 @@ def get_vertical_partitions(keys):
     return partitions
 
 
-def base_hash_join(relation_a, relation_b, key_1, key_2):
+def base_hash_join():
     raise NotImplementedError
