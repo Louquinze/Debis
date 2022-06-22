@@ -88,7 +88,8 @@ def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False):
 
     # Todo Probe phase, look up the new tuples by checking the hash table H(hash_func(key_2))
     join = []
-    for subject, object in probe_r:
+    for probe_i in probe_r:
+        subject, object = probe_i[-2], probe_i[-1]
         if probe_key == "subject":
             if subject in hash_table:
                 if keep_key:
@@ -141,7 +142,9 @@ def hash_join(**kwargs):
         join, hash_table = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"], keep_key=keep_key)
         buffer.append((join, hash_table))
         if i > 1:
-            print(last_join[0], join[0])  # [1:]
+            print(last_join[0], join[0][1:])  # [1:]
+            join, hash_table = base_hash_join(last_join, join, "object", "subject", keep_key=keep_key)
+            print(join[0])
             # use base_hash_join again with abitary num of features but only 1 key
         last_join = join
 
