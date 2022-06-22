@@ -73,21 +73,29 @@ def base_hash_join(build_r, probe_r, build_key, probe_key):
     hash_table = {}
     for subject, object in build_r:
         if build_key == "subject":
-            hash_table[subject] = object
+            if subject not in hash_table:
+                hash_table[subject] = set([object])  # create a bucket storing same hash
+            else:
+                hash_table[subject].add(object)
         elif build_key == "object":
-            hash_table[object] = subject
+            if object not in hash_table:
+                hash_table[object] = set([subject])
+            else:
+                hash_table[object].add(subject)
 
     # Todo Probe phase, look up the new tuples by checking the hash table H(hash_func(key_2))
     join = []
     for subject, object in probe_r:
         if probe_key == "subject":
             if subject in hash_table:
-                join.append((hash_table[subject], object))
+                # join.append((hash_table[subject], object))
+                join += [(i, object) for i in hash_table[subject]]
         elif probe_key == "object":
             if object in hash_table:
-                join.append((hash_table[object], subject))
+                # join.append((hash_table[object], subject))
+                join += [(i, subject) for i in hash_table[object]]
 
-    return join
+    return join, hash_table
 
 def hash_join(**kwargs):
     """
@@ -117,10 +125,13 @@ def hash_join(**kwargs):
     }
     """
     # initial join
-    join = base_hash_join(kwargs[f"build_r_1"], kwargs[f"probe_r_1"], kwargs[f"build_key_1"],
+    buffer = []
+    join, hash_table = base_hash_join(kwargs[f"build_r_1"], kwargs[f"probe_r_1"], kwargs[f"build_key_1"],
                           kwargs[f"probe_key_1"])
+    buffer.append((join, hash_table))
     for i in range(1, kwargs["num_joins"]+1):
-        # join = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"])
-        join = base_hash_join(join, kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"])
+        join, hash_table = base_hash_join(join, kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"])
+        buffer.append((join, hash_table))
+
     # todo how to implement the conjuctions
-    return join
+    return buffer

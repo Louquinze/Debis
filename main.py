@@ -4,8 +4,8 @@ import warnings
 warnings.filterwarnings("ignore")
 partitions = get_vertical_partitions(["follows", "friendOf", "likes", "hasReview"])
 # print(partitions)
-join = base_hash_join(partitions["likes"], partitions["hasReview"], "object", "subject")
-# print(join)
+join, hash_table = base_hash_join(partitions["likes"], partitions["hasReview"], "object", "subject")
+print(join)
 
 # build_r, probe_r, build_key, probe_key
 kwargs = {
@@ -24,6 +24,6 @@ kwargs = {
     "num_joins": 3
 
 }
-join = hash_join(**kwargs)
-print(join)
+# buffer = hash_join(**kwargs)
+# print(buffer)
 
