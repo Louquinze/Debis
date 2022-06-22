@@ -85,25 +85,26 @@ def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False):
                 hash_table[object] = set([subject])
             else:
                 hash_table[object].add(subject)
-
     # Todo Probe phase, look up the new tuples by checking the hash table H(hash_func(key_2))
-    join = []
     for probe_i in probe_r:
         subject, object = probe_i[-2], probe_i[-1]
         if probe_key == "subject":
             if subject in hash_table:
                 if keep_key:
-                    join += [(*i, subject, object) for i in hash_table[subject]]
+                    for i in hash_table[subject]:
+                        yield (*i, subject, object)
                 else:
-                    join += [(i, object) for i in hash_table[subject]]
+                    for i in hash_table[subject]:
+                        yield  (i, object)
         elif probe_key == "object":
             if object in hash_table:
                 if keep_key:
-                    join += [(*i, object, subject) for i in hash_table[object]]
+                    for i in hash_table[object]:
+                        yield (*i, object, subject)
                 else:
-                    join += [(i, subject) for i in hash_table[object]]
+                    for i in hash_table[object]:
+                        yield (i, subject)
 
-    return join, hash_table
 
 def hash_join(**kwargs):
     """
@@ -139,14 +140,14 @@ def hash_join(**kwargs):
     # buffer.append((join))
     keep_key = True
     for i in range(1, kwargs["num_joins"]+1):
-        join, hash_table = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"], keep_key=keep_key)
-        buffer.append((join, hash_table))
+        join = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"], keep_key=keep_key)
         if i > 1:
-            print(last_join[0], join[0][1:])  # [1:]
-            join, hash_table = base_hash_join(last_join, join, "object", "subject", keep_key=keep_key)
-            print(join[0])
+            join = base_hash_join(last_join, join, "object", "subject", keep_key=keep_key)
+            for elem in join:
+                print(elem)
+                break
             # use base_hash_join again with abitary num of features but only 1 key
         last_join = join
 
     # todo how to implement the conjuctions
-    return buffer
+    return join
