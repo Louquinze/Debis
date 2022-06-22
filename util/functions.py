@@ -143,9 +143,6 @@ def hash_join(**kwargs):
         join = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"], keep_key=keep_key)
         if i > 1:
             join = base_hash_join(last_join, join, "object", "subject", keep_key=keep_key)
-            for elem in join:
-                print(elem)
-                break
             # use base_hash_join again with abitary num of features but only 1 key
         last_join = join
 

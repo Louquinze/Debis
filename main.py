@@ -24,4 +24,8 @@ kwargs = {
     "num_joins": 3
 
 }
-buffer = hash_join(**kwargs)  # buffer.append((join, hash_table))
+join = hash_join(**kwargs)  # buffer.append((join, hash_table))
+with open("result_hash_join.csv", "w") as f:
+    f.write("follows.subject,follows.object,friendOf.object,likes.object,hasReview.object\n")
+    for elem in join:
+        f.write(f"{elem[0]},{elem[1]},{elem[2]},{elem[3]},{elem[4]}\n")
