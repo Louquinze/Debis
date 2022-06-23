@@ -1,10 +1,11 @@
-from util.functions import get_user_properties, get_vertical_partitions, base_hash_join, hash_join
+from util.functions import get_user_properties, get_vertical_partitions, base_hash_join, hash_join, parallel_sort_join
 import warnings
 
 warnings.filterwarnings("ignore")
 partitions = get_vertical_partitions(["follows", "friendOf", "likes", "hasReview"])
 # print(partitions)
-# join, hash_table = base_hash_join(partitions["likes"], partitions["hasReview"], "object", "subject", keep_key=True)
+join = parallel_sort_join(partitions["likes"], partitions["hasReview"], "object", "subject")  # , keep_key=True)
+print(join)
 # print(join)
 
 # build_r, probe_r, build_key, probe_key
@@ -24,11 +25,11 @@ kwargs = {
     "num_joins": 3
 
 }
-join = hash_join(**kwargs)  # buffer.append((join, hash_table))
+# join = hash_join(**kwargs)  # buffer.append((join, hash_table))
 # with open("result_hash_join.csv", "w") as f:
 #     f.write("follows.subject,follows.object,friendOf.object,likes.object,hasReview.object\n")
 #     for elem in join:
 #         f.write(f"{elem[0]},{elem[1]},{elem[2]},{elem[3]},{elem[4]}\n")
 
-for elem in join:
-    print(f"{elem[0]}, {elem[1]}, {elem[2]}, {elem[3]}, {elem[4]}")
+# for elem in join:
+#     print(f"{elem[0]}, {elem[1]}, {elem[2]}, {elem[3]}, {elem[4]}")

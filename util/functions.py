@@ -80,7 +80,7 @@ def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False):
             else:
                 hash_table[subject].add(object)
         elif build_key == "object":
-            subject, object = build_i[:len(build_i)-1], build_i[-1]
+            subject, object = build_i[:len(build_i) - 1], build_i[-1]
             if object not in hash_table:
                 hash_table[object] = set([subject])
             else:
@@ -95,7 +95,7 @@ def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False):
                         yield (*i, subject, object)
                 else:
                     for i in hash_table[subject]:
-                        yield  (i, object)
+                        yield (i, object)
         elif probe_key == "object":
             if object in hash_table:
                 if keep_key:
@@ -139,12 +139,54 @@ def hash_join(**kwargs):
     #                       kwargs[f"probe_key_1"], keep_key=True)
     # buffer.append((join))
     keep_key = True
-    for i in range(1, kwargs["num_joins"]+1):
-        join = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"], keep_key=keep_key)
+    for i in range(1, kwargs["num_joins"] + 1):
+        join = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"],
+                              kwargs[f"probe_key_{i}"], keep_key=keep_key)
         if i > 1:
             join = base_hash_join(last_join, join, "object", "subject", keep_key=keep_key)
             # use base_hash_join again with abitary num of features but only 1 key
         last_join = join
 
     # todo how to implement the conjuctions
+    return join
+
+
+def parallel_sort_join(build_r, probe_r, build_key, probe_key, keep_key=False):
+    if build_key == "subject":
+        build_r.sort(key=lambda tup: tup[0])  # inplace
+    elif build_key == "object":
+        build_r.sort(key=lambda tup: tup[1])
+
+    if probe_key == "subject":
+        probe_r.sort(key=lambda tup: tup[0])
+    elif probe_key == "object":
+        probe_r.sort(key=lambda tup: tup[1])
+
+    join = []
+    for build_i in build_r:
+        for probe_i in probe_r:
+            if build_key == "subject" and probe_key == "subject":
+                if build_i[0] == probe_i[0]:
+                    if keep_key:
+                        join.append((build_i[0], build_i[1], probe_i[1]))
+                    else:
+                        join.append((build_i[1], build_i[1]))
+            elif build_key == "object" and probe_key == "subject":
+                if build_i[1] == probe_i[0]:
+                    if keep_key:
+                        join.append((build_i[0], build_i[1], probe_i[1]))
+                    else:
+                        join.append((build_i[0], build_i[1]))
+            elif build_key == "subject" and probe_key == "object":
+                if build_i[0] == probe_i[1]:
+                    if keep_key:
+                        join.append((build_i[0], build_i[1], probe_i[0]))
+                    else:
+                        join.append((build_i[1], build_i[0]))
+            elif build_key == "object" and probe_key == "object":
+                if build_i[1] == probe_i[1]:
+                    if keep_key:
+                        join.append((build_i[0], build_i[1], probe_i[0]))
+                    else:
+                        join.append((build_i[0], build_i[0]))
     return join
