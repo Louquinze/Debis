@@ -1,25 +1,52 @@
+import os
 import unittest
+import os
 from util.functions import base_hash_join, hash_join
 # base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False)
 
 class TestHashJoin(unittest.TestCase):
-    def test_base_hash_join(self):
+    def test_base_hash_join_1(self):
         build_r = [(i, i) for i in range(3)]
         probe_r = [(i, i) for i in range(2)]
         self.assertEqual([tup for tup in base_hash_join(build_r, probe_r, "object", "subject", keep_key=False)],
                          [(0, 0), (1, 1)])  # add assertion here
+        for folder in os.listdir("tmp"):
+            if "hash" in folder:
+                for elem in os.listdir(f"tmp/{folder}"):
+                    os.remove(f"tmp/{folder}/{elem}")
+                os.rmdir(f"tmp/{folder}")
 
+        for elem in os.listdir(f"tmp/partitions"):
+            os.remove(f"tmp/partitions/{elem}")
+
+    def test_base_hash_join_2(self):
         build_r = [(i, i+1) for i in range(3)]
         probe_r = [(i, i) for i in range(2)]
         self.assertEqual([tup for tup in base_hash_join(build_r, probe_r, "object", "subject", keep_key=True)],
                          [(0, 1, 1)])  # add assertion here
+        for folder in os.listdir("tmp"):
+            if "hash" in folder:
+                for elem in os.listdir(f"tmp/{folder}"):
+                    os.remove(f"tmp/{folder}/{elem}")
+                os.rmdir(f"tmp/{folder}")
 
+        for elem in os.listdir(f"tmp/partitions"):
+            os.remove(f"tmp/partitions/{elem}")
+
+    def test_base_hash_join_3(self):
+        print(os.getcwd())
         build_r = [(i, i + 1) for i in range(3)]
         probe_r = [(i, i) for i in range(2)]
-        for tup in base_hash_join(build_r, probe_r, "subject", "object", keep_key=True):
-            print(tup)
         self.assertEqual([tup for tup in base_hash_join(build_r, probe_r, "subject", "object", keep_key=True)],
                          [(0, 0, 1), (1, 1, 2)])  # add assertion here
+        for folder in os.listdir("tmp"):
+            if "hash" in folder:
+                for elem in os.listdir(f"tmp/{folder}"):
+                    os.remove(f"tmp/{folder}/{elem}")
+                os.rmdir(f"tmp/{folder}")
+
+        for elem in os.listdir(f"tmp/partitions"):
+            os.remove(f"tmp/partitions/{elem}")
 
     def test_hash_join(self):
         partitions = dict()
@@ -80,6 +107,15 @@ class TestHashJoin(unittest.TestCase):
             c += 1
         self.assertEqual(c, len(res))
 
+        for folder in os.listdir("tmp"):
+            if "hash" in folder:
+                for elem in os.listdir(f"tmp/{folder}"):
+                    os.remove(f"tmp/{folder}/{elem}")
+                os.rmdir(f"tmp/{folder}")
+
+        for elem in os.listdir(f"tmp/partitions"):
+            os.remove(f"tmp/partitions/{elem}")
+
     def test_hash_join_big(self):
         partitions = {}
         partitions[0] = [(1, 1) for _ in range(int(1e7))]
@@ -107,6 +143,15 @@ class TestHashJoin(unittest.TestCase):
                 print(elem)
             c += 1
         self.assertEqual(c, int(1e7/4))
+
+        for folder in os.listdir("tmp"):
+            if "hash" in folder:
+                for elem in os.listdir(f"tmp/{folder}"):
+                    os.remove(f"tmp/{folder}/{elem}")
+                os.rmdir(f"tmp/{folder}")
+
+        for elem in os.listdir(f"tmp/partitions"):
+            os.remove(f"tmp/partitions/{elem}")
 
 
 if __name__ == '__main__':
