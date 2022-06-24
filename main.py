@@ -7,7 +7,9 @@ warnings.filterwarnings("ignore")
 
 partitions = {}
 for key in ["follows", "friendOf", "likes", "hasReview"]:
-    partitions[key] = get_vertical_partitions(key, "watdiv.10M/watdiv.10M.nt")
+    partitions[key] = get_vertical_partitions(key
+                                              # , "watdiv.10M/watdiv.10M.nt"
+                                              )
     for i in partitions[key]:
         print(i)
         break
