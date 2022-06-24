@@ -31,5 +31,8 @@ join = hash_join(**kwargs)  # buffer.append((join, hash_table))
 #     for elem in join:
 #         f.write(f"{elem[0]},{elem[1]},{elem[2]},{elem[3]},{elem[4]}\n")
 
+c = 0
 for elem in join:
-    print(f"{elem[0]}, {elem[1]}, {elem[2]}, {elem[3]}, {elem[4]}")
+    # print(f"{elem[0]}, {elem[1]}, {elem[2]}, {elem[3]}, {elem[4]}")
+    c += 1
+print(c)

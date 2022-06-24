@@ -95,15 +95,15 @@ def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False):
                         yield (*i, subject, object)
                 else:
                     for i in hash_table[subject]:
-                        yield (i, object)
+                        yield (*i, object)
         elif probe_key == "object":
             if object in hash_table:
                 if keep_key:
                     for i in hash_table[object]:
-                        yield (*i, object, subject)
+                        yield (subject, object, *i)
                 else:
                     for i in hash_table[object]:
-                        yield (i, subject)
+                        yield (subject, *i)
 
 
 def hash_join(**kwargs):
@@ -140,10 +140,12 @@ def hash_join(**kwargs):
     # buffer.append((join))
     keep_key = True
     for i in range(1, kwargs["num_joins"] + 1):
-        join = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"],
-                              kwargs[f"probe_key_{i}"], keep_key=keep_key)
-        if i > 1:
-            join = base_hash_join(last_join, join, "object", "subject", keep_key=keep_key)
+        if i == 1:
+            join = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"],
+                                  kwargs[f"probe_key_{i}"], keep_key=keep_key)
+        else:
+            join = base_hash_join(last_join, kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
+                                  keep_key=keep_key)
             # use base_hash_join again with abitary num of features but only 1 key
         last_join = join
 
