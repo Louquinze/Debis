@@ -2,7 +2,8 @@ from util.functions import get_user_properties, get_vertical_partitions, base_ha
 import warnings
 
 warnings.filterwarnings("ignore")
-partitions = get_vertical_partitions(["follows", "friendOf", "likes", "hasReview"])
+partitions = get_vertical_partitions(["follows", "friendOf", "likes", "hasReview"], filename="watdiv.10M/watdiv.10M.nt")
+print(partitions["follows"])
 # print(partitions)
 # join = base_parallel_sort_join(partitions["likes"], partitions["hasReview"], "object", "subject")  # , keep_key=True)
 # print(join)
@@ -33,6 +34,7 @@ join = hash_join(**kwargs)  # buffer.append((join, hash_table))
 
 c = 0
 for elem in join:
-    # print(f"{elem[0]}, {elem[1]}, {elem[2]}, {elem[3]}, {elem[4]}")
+    if c % 1e6 == 0:
+        print(f"{elem[0]}, {elem[1]}, {elem[2]}, {elem[3]}, {elem[4]}")
     c += 1
 print(c)

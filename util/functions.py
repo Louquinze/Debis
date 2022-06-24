@@ -36,7 +36,7 @@ def get_user_properties():
     return properites
 
 
-def get_vertical_partitions(keys):
+def get_vertical_partitions(keys, filename="100k.txt"):
     # edges: follows, friendOf, likes, hasReview
     # nodes: User, Review
     partitions = {key: list() for key in keys}
@@ -45,23 +45,36 @@ def get_vertical_partitions(keys):
     Lines = file1.readlines()
     for line in Lines:
         text = line.strip()
-        rep = {"wsdbm:": "",
-               "sorg:": "",
-               "gr:": "",
-               "foaf:": "",
-               "gn:": "",
-               "rdf:": "",
-               '"': "",
-               ".": "",
-               "\t": " ",
-               "rev:": "",
-               "dc:": ""
-               }  # define desired replacements here
+        if filename == '100k.txt':
+            rep = {"wsdbm:": "",
+                   "sorg:": "",
+                   "gr:": "",
+                   "foaf:": "",
+                   "gn:": "",
+                   "rdf:": "",
+                   '"': "",
+                   ".": "",
+                   "\t": " ",
+                   "rev:": "",
+                   "dc:": ""
+                   }  # define desired replacements here
+        else:
+            rep = {
+                '"': "",
+                ".": "",
+                "\t": " ",
+                ">": "",
+                "<": "",
+                "http://": ""
+            }  # define desired replacements here
 
         # use these three lines to do the replacement
         rep = dict((re.escape(k), v) for k, v in rep.items())
         pattern = re.compile("|".join(rep.keys()))
-        text = pattern.sub(lambda m: rep[re.escape(m.group(0))], text)
+        for r in ["dbuwaterlooca/~galuc/wsdbm/", "schemaorg/", "purlorg/goodrelations/", "/~galuc/wsdbm/",
+                  "wwwgeonamesorg/ontology#", "purlorg/stuff/rev#", "ogpme/ns#", "wwww3org/1999/02/22-rdf-syntax-ns#",
+                  ]:
+            text = pattern.sub(lambda m: rep[re.escape(m.group(0))], text).replace(r, "")
 
         content = text.split(" ", 2)
         if content[1] in keys:
@@ -70,7 +83,7 @@ def get_vertical_partitions(keys):
     return partitions
 
 
-def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False, step=0):
+def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False, step=0, memory_limit=2):
     """
     hash_table = {
     "A": set([i for i in range(10)]),
@@ -106,7 +119,7 @@ def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False, step=
             else:
                 hash_table[object].add(subject)
         # save hash_table to disk if it reaches a certain size
-        if sys.getsizeof(hash_table) / 1e6 > 0.04:  # 2 GiB
+        if sys.getsizeof(hash_table) / 1e6 > memory_limit:  # 2 GiB
             # store to file
             with open(f"tmp/hash_{step}/hash_table_{current_table_idx}.pkl", "wb") as f:
                 pickle.dump(hash_table, f)
