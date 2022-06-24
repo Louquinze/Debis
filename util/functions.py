@@ -2,6 +2,7 @@ import re
 import sys
 import os
 import pickle
+from heapq import heappush
 
 
 def get_user_properties():
@@ -215,87 +216,9 @@ def hash_join(**kwargs):
     return join
 
 
-def base_parallel_sort_join(build_r, probe_r, build_key, probe_key, keep_key=False):
-    if build_key == "subject":
-        build_r.sort(key=lambda tup: tup[0])  # inplace
-    elif build_key == "object":
-        build_r.sort(key=lambda tup: tup[1])
+def base_sort_join(build_r, probe_r, build_key, probe_key, keep_key=False, memory_limit=2, step=0):
+    # sort relations, therefore move only subsets to a sorted list and save sorted sub lists
+    raise NotImplementedError
 
-    if probe_key == "subject":
-        probe_r.sort(key=lambda tup: tup[0])
-    elif probe_key == "object":
-        probe_r.sort(key=lambda tup: tup[1])
-
-    join = []
-    for build_i in build_r:
-        for probe_i in probe_r:
-            if build_key == "subject" and probe_key == "subject":
-                if build_i[0] == probe_i[0]:
-                    if keep_key:
-                        join.append((build_i[0], build_i[1], probe_i[1]))
-                    else:
-                        join.append((build_i[1], build_i[1]))
-            elif build_key == "object" and probe_key == "subject":
-                if build_i[1] == probe_i[0]:
-                    if keep_key:
-                        join.append((build_i[0], build_i[1], probe_i[1]))
-                    else:
-                        join.append((build_i[0], build_i[1]))
-            elif build_key == "subject" and probe_key == "object":
-                if build_i[0] == probe_i[1]:
-                    if keep_key:
-                        join.append((build_i[0], build_i[1], probe_i[0]))
-                    else:
-                        join.append((build_i[1], build_i[0]))
-            elif build_key == "object" and probe_key == "object":
-                if build_i[1] == probe_i[1]:
-                    if keep_key:
-                        join.append((build_i[0], build_i[1], probe_i[0]))
-                    else:
-                        join.append((build_i[0], build_i[0]))
-    return join
-
-
-def parallel_sort_join(**kwargs):
-    """
-    use concatenation of base_hash_join to join multiple relations (subject, object)
-    --> how to define this ? --> work with args
-
-    def func_kwargs(**kwargs):
-    print('kwargs: ', kwargs)
-    print('type: ', type(kwargs))
-
-    func_kwargs(key1=1, key2=2, key3=3)
-    # kwargs:  {'key1': 1, 'key2': 2, 'key3': 3}
-    # type:  <class 'dict'>
-
-    --> indice build_r, probe_r, build_key, probe_key
-    kwargs = {
-        "build_r_init": partitions["follows"],
-        "probe_r_1": partitions["friendOf"],
-        "build_key_1": "object",
-        "probe_key_1": "subject",
-        "probe_r_2": partitions["likes"],
-        "build_key_2": "object",
-        "probe_key_2": "subject",
-        "probe_r_3": partitions["hasReview"],
-        "build_key_3": "object",
-        "probe_key_3": "subject",
-    }
-    """
-    # initial join
-    buffer = []
-    # join = base_hash_join(kwargs[f"build_r_1"], kwargs[f"probe_r_1"], kwargs[f"build_key_1"],
-    #                       kwargs[f"probe_key_1"], keep_key=True)
-    # buffer.append((join))
-    keep_key = True
-    for i in range(1, kwargs["num_joins"] + 1):
-        join = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"],
-                              kwargs[f"probe_key_{i}"], keep_key=keep_key)
-        if i > 1:
-            join = base_hash_join(last_join, join, "object", "subject", keep_key=keep_key)
-            # use base_hash_join again with abitary num of features but only 1 key
-        last_join = join
-
-    # todo how to implement the conjuctions
-    return join
+def sort_join(**kwargs):
+    raise NotImplementedError
