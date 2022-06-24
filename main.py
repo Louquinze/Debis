@@ -1,3 +1,5 @@
+import os
+
 from util.functions import get_user_properties, get_vertical_partitions, base_hash_join, hash_join, base_parallel_sort_join
 import warnings
 
@@ -5,7 +7,7 @@ warnings.filterwarnings("ignore")
 
 partitions = {}
 for key in ["follows", "friendOf", "likes", "hasReview"]:
-    partitions[key] = get_vertical_partitions(key)
+    partitions[key] = get_vertical_partitions(key, "watdiv.10M/watdiv.10M.nt")
     for i in partitions[key]:
         print(i)
         break
@@ -38,3 +40,12 @@ for elem in join:
         print(f"{elem[0]}, {elem[1]}, {elem[2]}, {elem[3]}, {elem[4]}")
     c += 1
 print(c)
+
+for folder in os.listdir("tmp"):
+    if "hash" in folder:
+        for elem in os.listdir(f"tmp/{folder}"):
+            os.remove(f"tmp/{folder}/{elem}")
+        os.rmdir(f"tmp/{folder}")
+
+for elem in os.listdir(f"tmp/partitions"):
+    os.remove(f"tmp/partitions/{elem}")

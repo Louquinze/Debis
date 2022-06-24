@@ -163,9 +163,9 @@ def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False, step=
                     else:
                         for i in hash_table[object]:
                             yield (subject, *i)
-        for file in os.listdir(f"tmp/hash_{step}"):
-            os.remove(f"tmp/hash_{step}/{file}")
-        os.rmdir(f"tmp/hash_{step}")
+        # for file in os.listdir(f"tmp/hash_{step}"):
+        #     os.remove(f"tmp/hash_{step}/{file}")
+        # os.rmdir(f"tmp/hash_{step}")
 
 
 def hash_join(**kwargs):
