@@ -36,12 +36,11 @@ def get_user_properties():
     return properites
 
 
-def get_vertical_partitions(keys, filename="100k.txt"):
+def get_vertical_partitions(key, filename='100k.txt'):
     # edges: follows, friendOf, likes, hasReview
     # nodes: User, Review
-    partitions = {key: list() for key in keys}
 
-    file1 = open('100k.txt', 'r')
+    file1 = open(filename, 'r')
     Lines = file1.readlines()
     for line in Lines:
         text = line.strip()
@@ -56,8 +55,7 @@ def get_vertical_partitions(keys, filename="100k.txt"):
                    ".": "",
                    "\t": " ",
                    "rev:": "",
-                   "dc:": ""
-                   }  # define desired replacements here
+                   "dc:": ""}
         else:
             rep = {
                 '"': "",
@@ -77,10 +75,9 @@ def get_vertical_partitions(keys, filename="100k.txt"):
             text = pattern.sub(lambda m: rep[re.escape(m.group(0))], text).replace(r, "")
 
         content = text.split(" ", 2)
-        if content[1] in keys:
-            partitions[content[1]].append((content[0].replace(" ", ""), content[2].replace(" ", "")))
-
-    return partitions
+        # Todo Map subject and object to numbers, maybe possible in same loop
+        if content[1] == key:  # this is why big is not build
+            yield content[0].replace(" ", ""), content[2].replace(" ", "")
 
 
 def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False, step=0, memory_limit=2):

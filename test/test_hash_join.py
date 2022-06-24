@@ -80,6 +80,34 @@ class TestHashJoin(unittest.TestCase):
             c += 1
         self.assertEqual(c, len(res))
 
+    def test_hash_join_big(self):
+        partitions = {}
+        partitions[0] = [(1, 1) for _ in range(int(1e7))]
+        partitions[1] = [(1, 1) for _ in range(int(1e7/2))] + [(2, 2) for _ in range(int(1e7/2))]
+        partitions[2] = [(1, 1) for _ in range(int(1e7/4))]
+
+        kwargs = {
+            "build_r_1": partitions[0],
+            "probe_r_1": partitions[1],
+            "build_key_1": "object",
+            "probe_key_1": "subject",
+            "build_r_2": partitions[1],
+            "probe_r_2": partitions[2],
+            "build_key_2": "object",
+            "probe_key_2": "subject",
+            "num_joins": 2
+
+        }
+
+        join = hash_join(**kwargs)  # buffer.append((join, hash_table))
+        c = 0
+        for elem in join:
+        #     self.assertIn(elem, res)
+            if c % 1e6 == 0:
+                print(elem)
+            c += 1
+        self.assertEqual(c, int(1e7/4))
+
 
 if __name__ == '__main__':
     unittest.main()

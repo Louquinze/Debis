@@ -2,14 +2,14 @@ from util.functions import get_user_properties, get_vertical_partitions, base_ha
 import warnings
 
 warnings.filterwarnings("ignore")
-partitions = get_vertical_partitions(["follows", "friendOf", "likes", "hasReview"], filename="watdiv.10M/watdiv.10M.nt")
-print(partitions["follows"])
-# print(partitions)
-# join = base_parallel_sort_join(partitions["likes"], partitions["hasReview"], "object", "subject")  # , keep_key=True)
-# print(join)
-# print(join)
 
-# build_r, probe_r, build_key, probe_key
+partitions = {}
+for key in ["follows", "friendOf", "likes", "hasReview"]:
+    partitions[key] = get_vertical_partitions(key)
+    for i in partitions[key]:
+        print(i)
+        break
+
 kwargs = {
     "build_r_1": partitions["follows"],
     "probe_r_1": partitions["friendOf"],
