@@ -220,5 +220,6 @@ def base_sort_join(build_r, probe_r, build_key, probe_key, keep_key=False, memor
     # sort relations, therefore move only subsets to a sorted list and save sorted sub lists
     raise NotImplementedError
 
+
 def sort_join(**kwargs):
     raise NotImplementedError
