@@ -117,6 +117,7 @@ def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False, step=
             else:
                 hash_table[object].add(subject)
         # save hash_table to disk if it reaches a certain size
+        print(len(join))
         if sys.getsizeof(hash_table) / 1e6 > memory_limit:  # 2 GiB
             # store to file
             with open(f"tmp/hash_{step}/hash_table_{current_table_idx}.pkl", "wb") as f:
@@ -230,16 +231,18 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
             for line in Lines:
                 text = line.strip()
                 build_r.append(tuple(text.split(" ")))
+        print(f"build_r: {build_r}")
 
         for build_i in build_r:
             if build_key == "subject":
                 b_subject, b_object = build_i[0], build_i[1:]
             elif build_key == "object":
                 b_subject, b_object = build_i[:len(build_i) - 1], build_i[-1]
+
             for file_p in sorted(os.listdir(probe_path)):
-                if sys.getsizeof(join) / 1e7 > memory_limit:  # 2 GiB
+                if sys.getsizeof(join) / 1e6 > memory_limit:  # 2 GiB
                     # store to file
-                    # Todo merge all the list https://stackoverflow.com/questions/56948292/python-sort-a-large-list-that-doesnt-fit-in-memory
+                    print("Memory Limit reached: sorte merge subject")
                     join.sort(key=lambda tup: tup[0])
                     with open(f"tmp/sort/{save_name}/subject/{count}.csv", "w") as f:  # subject
                         for line in join:
@@ -249,11 +252,12 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                         chunks = [open(f"tmp/sort/{save_name}/subject/{count - 1}.csv", "r"),
                                   open(f"tmp/sort/{save_name}/subject/{count}.csv", "r")]
                         with open(f"tmp/sort/{save_name}/subject/tmp.csv", 'w') as f_out:
-                            f_out.writelines(merge(*chunks, key=lambda k: int(k.split()[0])))
+                            f_out.writelines(merge(*chunks, key=lambda k: k.split()[0]))
                         os.remove(f"tmp/sort/{save_name}/subject/{count - 1}.csv")
                         os.remove(f"tmp/sort/{save_name}/subject/{count}.csv")
                         os.rename(f"tmp/sort/{save_name}/subject/tmp.csv", f"tmp/sort/{save_name}/subject/{count}.csv")
 
+                    print("Memory Limit reached: sorte merge object")
                     join.sort(key=lambda tup: tup[-1])
                     with open(f"tmp/sort/{save_name}/object/{count}.csv", "w") as f:  # object
                         for line in join:
@@ -264,7 +268,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                         chunks = [open(f"tmp/sort/{save_name}/object/{count - 1}.csv", "r"),
                                   open(f"tmp/sort/{save_name}/object/{count}.csv", "r")]
                         with open(f"tmp/sort/{save_name}/object/tmp.csv", 'w') as f_out:
-                            f_out.writelines(merge(*chunks, key=lambda k: int(k.split()[0])))
+                            f_out.writelines(merge(*chunks, key=lambda k: k.split()[-1]))
                         os.remove(f"tmp/sort/{save_name}/object/{count - 1}.csv")
                         os.remove(f"tmp/sort/{save_name}/object/{count}.csv")
                         os.rename(f"tmp/sort/{save_name}/object/tmp.csv", f"tmp/sort/{save_name}/object/{count}.csv")
@@ -272,6 +276,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                     count += 1
                     del join[:]
 
+                    print("finished sorting\n")
                 probe_r = []
                 with open(f"{probe_path}/{file_p}", "r") as f:
                     Lines = f.readlines()
