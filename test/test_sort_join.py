@@ -121,8 +121,8 @@ class TestsortJoin(unittest.TestCase):
             "probe_r_3": partitions["hasReview"],
             "build_key_3": "object",
             "probe_key_3": "subject",
-            "num_joins": 3
-
+            "num_joins": 3,
+            "memory_limit": 3
         }
         res = [
             ("Lukas", "Hannah", "Lukas", "P0", "R0"),
@@ -160,9 +160,9 @@ class TestsortJoin(unittest.TestCase):
         os.mkdir("tmp/sort")
 
         partitions = {}
-        partitions["A"] = [(1, 1) for _ in range(int(1e5))]
-        partitions["B"] = [(1, 1) for _ in range(int(1e5/2))] + [(2, 2) for _ in range(int(1e5/2))]
-        partitions["C"] = [(1, 1) for _ in range(int(1e5/4))]
+        partitions["A"] = [(1, 1) for _ in range(int(1e4))]
+        partitions["B"] = [(1, 1) for _ in range(int(1e4/2))] + [(2, 2) for _ in range(int(1e4/2))]
+        partitions["C"] = [(1, 1) for _ in range(int(1e4/4))]
 
         # write sorted list to drive
         for key in partitions:
@@ -198,8 +198,8 @@ class TestsortJoin(unittest.TestCase):
             "probe_r_2": partitions["C"],
             "build_key_2": "object",
             "probe_key_2": "subject",
-            "num_joins": 2
-
+            "num_joins": 2,
+            "memory_limit": 3
         }
 
         try:
@@ -210,7 +210,7 @@ class TestsortJoin(unittest.TestCase):
                 if c % 1e4 == 0:
                     print(elem)
                 c += 1
-            self.assertEqual(c, int(1e5/4))
+            self.assertEqual(c, int(1e4/4))
         finally:
             for folder in os.listdir("tmp/sort"):
                 for elem in os.listdir(f"tmp/sort/{folder}"):

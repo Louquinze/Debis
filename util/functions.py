@@ -301,6 +301,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
             f.write(" ".join(str(x) for x in line))
             f.write("\n")
     del join[:]
+    # Todo merge all the list https://stackoverflow.com/questions/56948292/python-sort-a-large-list-that-doesnt-fit-in-memory
 
     return f"tmp/sort/{save_name}"
 
@@ -312,12 +313,12 @@ def sort_join(**kwargs):
             join_path = base_sort_join(kwargs[f"build_r_{i}"][kwargs[f"build_key_{i}"]],
                                        kwargs[f"probe_r_{i}"][kwargs[f"probe_key_{i}"]],
                                        kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
-                                       keep_key=keep_key, save_name=i)
+                                       keep_key=keep_key, save_name=i, memory_limit=kwargs["memory_limit"])
         else:
             join_path = base_sort_join(last_join_path + "/" + kwargs[f"build_key_{i}"],
                                        kwargs[f"probe_r_{i}"][kwargs[f"probe_key_{i}"]],
                                        kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
-                                       keep_key=keep_key, save_name=i)
+                                       keep_key=keep_key, save_name=i, memory_limit=kwargs["memory_limit"])
             # use base_hash_join again with abitary num of features but only 1 key
         last_join_path = join_path
 
