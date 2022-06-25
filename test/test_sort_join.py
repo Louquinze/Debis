@@ -12,14 +12,14 @@ class TestsortJoin(unittest.TestCase):
         build_r = "tmp/b_sort_test_root/"
         probe_r = "tmp/p_sort_test_root/"
 
-        with open(f"{build_r}r_1.pkl", "wb") as f:
+        with open(f"{build_r}1.pkl", "wb") as f:
             pickle.dump([(1, 1), (2, 2)], f)
-        with open(f"{build_r}r_2.pkl", "wb") as f:
+        with open(f"{build_r}2.pkl", "wb") as f:
             pickle.dump([(3, 3), (4, 4)], f)
 
-        with open(f"{probe_r}r_1.pkl", "wb") as f:
+        with open(f"{probe_r}1.pkl", "wb") as f:
             pickle.dump([(0, 0), (1, 1)], f)
-        with open(f"{probe_r}r_2.pkl", "wb") as f:
+        with open(f"{probe_r}2.pkl", "wb") as f:
             pickle.dump([(2, 2), (3, 3)], f)
 
         try:
