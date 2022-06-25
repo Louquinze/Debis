@@ -246,8 +246,8 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                             f.write(" ".join(str(x) for x in line))
                             f.write("\n")
                     if count > 0:
-                        chunks = [open(f"tmp/sort/{save_name}/subject/{count - 1}.csv", "w"),
-                                  open(f"tmp/sort/{save_name}/subject/{count}.csv", "w")]
+                        chunks = [open(f"tmp/sort/{save_name}/subject/{count - 1}.csv", "r"),
+                                  open(f"tmp/sort/{save_name}/subject/{count}.csv", "r")]
                         with open(f"tmp/sort/{save_name}/subject/tmp.csv", 'w') as f_out:
                             f_out.writelines(merge(*chunks, key=lambda k: int(k.split()[0])))
                         os.remove(f"tmp/sort/{save_name}/subject/{count - 1}.csv")
@@ -261,8 +261,8 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                             f.write("\n")
 
                     if count > 0:
-                        chunks = [open(f"tmp/sort/{save_name}/object/{count - 1}.csv", "w"),
-                                  open(f"tmp/sort/{save_name}/object/{count}.csv", "w")]
+                        chunks = [open(f"tmp/sort/{save_name}/object/{count - 1}.csv", "r"),
+                                  open(f"tmp/sort/{save_name}/object/{count}.csv", "r")]
                         with open(f"tmp/sort/{save_name}/object/tmp.csv", 'w') as f_out:
                             f_out.writelines(merge(*chunks, key=lambda k: int(k.split()[0])))
                         os.remove(f"tmp/sort/{save_name}/object/{count - 1}.csv")
