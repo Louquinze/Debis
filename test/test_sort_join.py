@@ -212,7 +212,6 @@ class TestsortJoin(unittest.TestCase):
                 c += 1
             self.assertEqual(c, int(1e4/4))
         finally:
-            assert False
             for folder in os.listdir("tmp/sort"):
                 for elem in os.listdir(f"tmp/sort/{folder}"):
                     for file in os.listdir(f"tmp/sort/{folder}/{elem}"):

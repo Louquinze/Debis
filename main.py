@@ -1,6 +1,6 @@
 import os
 
-from util.functions import get_user_properties, get_vertical_partitions, base_hash_join, hash_join, base_parallel_sort_join
+from util.functions import get_user_properties, get_vertical_partitions, base_hash_join, hash_join, base_sort_join
 import warnings
 
 warnings.filterwarnings("ignore")
