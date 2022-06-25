@@ -59,7 +59,7 @@ class TestsortJoin(unittest.TestCase):
             os.rmdir(f"tmp/sort")
 
     def test_sort_join(self):
-        # os.mkdir("tmp/sort")
+        os.mkdir("tmp/sort")
 
         partitions = dict()
         partitions["follows"] = [
@@ -96,11 +96,15 @@ class TestsortJoin(unittest.TestCase):
             os.mkdir(f"tmp/sort/{key}/object")
 
             for idx, elem in enumerate(sorted(partitions[key], key=lambda tup: tup[0])):
-                with open(f"tmp/sort/{key}/subject/{idx}.pkl", "wb") as f:
-                    pickle.dump([elem], f)
+                with open(f"tmp/sort/{key}/subject/{idx}.pkl", "w") as f:
+                    f.write(" ".join(str(x) for x in elem))
+                    f.write("\n")
+
             for idx, elem in enumerate(sorted(partitions[key], key=lambda tup: tup[1])):
-                with open(f"tmp/sort/{key}/object/{idx}.pkl", "wb") as f:
-                    pickle.dump([elem], f)
+                with open(f"tmp/sort/{key}/object/{idx}.csv", "w") as f:
+                    f.write(" ".join(str(x) for x in elem))
+                    f.write("\n")
+
             partitions[key] = {"subject": f"tmp/sort/{key}/subject",
                                "object": f"tmp/sort/{key}/object"}
 
@@ -120,7 +124,6 @@ class TestsortJoin(unittest.TestCase):
             "num_joins": 3
 
         }
-        join = sort_join(**kwargs)  # buffer.append((join, sort_table))
         res = [
             ("Lukas", "Hannah", "Lukas", "P0", "R0"),
             ("Hannah", "Adina", "Lukas", "P0", "R0"),
@@ -129,6 +132,16 @@ class TestsortJoin(unittest.TestCase):
         ]
         c = 0
         try:
+            path = sort_join(**kwargs)  # buffer.append((join, sort_table))
+            join = []
+            path += "/subject"
+            for file_b in os.listdir(path):
+                with open(f"{path}/{file_b}", "r") as f:
+                    Lines = f.readlines()
+                    for line in Lines:
+                        text = line.strip()
+                        join.append(tuple(text.split(" ")))
+
             for elem in join:
                 self.assertIn(elem, res)
                 c += 1
@@ -140,9 +153,7 @@ class TestsortJoin(unittest.TestCase):
                         os.remove(f"tmp/sort/{folder}/{elem}/{file}")
                     os.rmdir(f"tmp/sort/{folder}/{elem}")
                 os.rmdir(f"tmp/sort/{folder}")
-
-            for elem in os.listdir(f"tmp/partitions"):
-                os.remove(f"tmp/partitions/{elem}")
+            os.rmdir(f"tmp/sort")
 
 
 if __name__ == '__main__':

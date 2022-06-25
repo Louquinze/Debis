@@ -236,7 +236,6 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                 b_subject, b_object = build_i[0], build_i[1:]
             elif build_key == "object":
                 b_subject, b_object = build_i[:len(build_i) - 1], build_i[-1]
-            print(build_path, probe_path)
             for file_p in sorted(os.listdir(probe_path)):
                 if sys.getsizeof(join) / 1e6 > memory_limit:  # 2 GiB
                     # store to file
@@ -315,7 +314,8 @@ def sort_join(**kwargs):
                                        kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
                                        keep_key=keep_key, save_name=i)
         else:
-            join_path = base_sort_join(last_join_path, kwargs[f"probe_r_{i}"][kwargs[f"probe_key_{i}"]],
+            join_path = base_sort_join(last_join_path + "/" + kwargs[f"build_key_{i}"],
+                                       kwargs[f"probe_r_{i}"][kwargs[f"probe_key_{i}"]],
                                        kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
                                        keep_key=keep_key, save_name=i)
             # use base_hash_join again with abitary num of features but only 1 key
