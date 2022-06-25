@@ -18,9 +18,6 @@ class TestHashJoin(unittest.TestCase):
                         os.remove(f"tmp/{folder}/{elem}")
                     os.rmdir(f"tmp/{folder}")
 
-            for elem in os.listdir(f"tmp/partitions"):
-                os.remove(f"tmp/partitions/{elem}")
-
     def test_base_hash_join_2(self):
         build_r = [(i, i+1) for i in range(3)]
         probe_r = [(i, i) for i in range(2)]
@@ -33,9 +30,6 @@ class TestHashJoin(unittest.TestCase):
                     for elem in os.listdir(f"tmp/{folder}"):
                         os.remove(f"tmp/{folder}/{elem}")
                     os.rmdir(f"tmp/{folder}")
-
-            for elem in os.listdir(f"tmp/partitions"):
-                os.remove(f"tmp/partitions/{elem}")
 
     def test_base_hash_join_3(self):
         print(os.getcwd())
@@ -51,8 +45,6 @@ class TestHashJoin(unittest.TestCase):
                         os.remove(f"tmp/{folder}/{elem}")
                     os.rmdir(f"tmp/{folder}")
 
-            for elem in os.listdir(f"tmp/partitions"):
-                os.remove(f"tmp/partitions/{elem}")
 
     def test_hash_join(self):
         partitions = dict()
@@ -119,8 +111,6 @@ class TestHashJoin(unittest.TestCase):
                     os.remove(f"tmp/{folder}/{elem}")
                 os.rmdir(f"tmp/{folder}")
 
-        for elem in os.listdir(f"tmp/partitions"):
-            os.remove(f"tmp/partitions/{elem}")
 
     def test_hash_join_big(self):
         partitions = {}
@@ -156,8 +146,6 @@ class TestHashJoin(unittest.TestCase):
                     os.remove(f"tmp/{folder}/{elem}")
                 os.rmdir(f"tmp/{folder}")
 
-        for elem in os.listdir(f"tmp/partitions"):
-            os.remove(f"tmp/partitions/{elem}")
 
 
 if __name__ == '__main__':

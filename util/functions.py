@@ -2,7 +2,7 @@ import re
 import sys
 import os
 import pickle
-from heapq import heappush
+from heapq import merge
 
 
 def get_user_properties():
@@ -237,7 +237,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
             elif build_key == "object":
                 b_subject, b_object = build_i[:len(build_i) - 1], build_i[-1]
             for file_p in sorted(os.listdir(probe_path)):
-                if sys.getsizeof(join) / 1e6 > memory_limit:  # 2 GiB
+                if sys.getsizeof(join) / 1e7 > memory_limit:  # 2 GiB
                     # store to file
                     # Todo merge all the list https://stackoverflow.com/questions/56948292/python-sort-a-large-list-that-doesnt-fit-in-memory
                     join.sort(key=lambda tup: tup[0])
@@ -245,11 +245,30 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                         for line in join:
                             f.write(" ".join(str(x) for x in line))
                             f.write("\n")
+                    if count > 0:
+                        chunks = [open(f"tmp/sort/{save_name}/subject/{count - 1}.csv", "w"),
+                                  open(f"tmp/sort/{save_name}/subject/{count}.csv", "w")]
+                        with open(f"tmp/sort/{save_name}/subject/tmp.csv", 'w') as f_out:
+                            f_out.writelines(merge(*chunks, key=lambda k: int(k.split()[0])))
+                        os.remove(f"tmp/sort/{save_name}/subject/{count - 1}.csv")
+                        os.remove(f"tmp/sort/{save_name}/subject/{count}.csv")
+                        os.rename(f"tmp/sort/{save_name}/subject/tmp.csv", f"tmp/sort/{save_name}/subject/{count}.csv")
+
                     join.sort(key=lambda tup: tup[-1])
                     with open(f"tmp/sort/{save_name}/object/{count}.csv", "w") as f:  # object
                         for line in join:
                             f.write(" ".join(str(x) for x in line))
                             f.write("\n")
+
+                    if count > 0:
+                        chunks = [open(f"tmp/sort/{save_name}/object/{count - 1}.csv", "w"),
+                                  open(f"tmp/sort/{save_name}/object/{count}.csv", "w")]
+                        with open(f"tmp/sort/{save_name}/object/tmp.csv", 'w') as f_out:
+                            f_out.writelines(merge(*chunks, key=lambda k: int(k.split()[0])))
+                        os.remove(f"tmp/sort/{save_name}/object/{count - 1}.csv")
+                        os.remove(f"tmp/sort/{save_name}/object/{count}.csv")
+                        os.rename(f"tmp/sort/{save_name}/object/tmp.csv", f"tmp/sort/{save_name}/object/{count}.csv")
+
                     count += 1
                     del join[:]
 
