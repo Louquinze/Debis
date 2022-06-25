@@ -216,7 +216,11 @@ def hash_join(**kwargs):
     return join
 
 
-def base_sort_join(build_path, probe_path, build_key, probe_key, keep_key=False, memory_limit=2, step=0):
+def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep_key=False, memory_limit=2):
+    os.mkdir(f"tmp/sort/{save_name}")
+
+    join = []
+    count = 0
     for file_b in sorted(os.listdir(build_path)):
         with open(f"{build_path}{file_b}", "rb") as f:
             build_r = pickle.load(f)
@@ -228,6 +232,13 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, keep_key=False,
                 b_subject, b_object = build_i[:len(build_i)-1], build_i[-1]
 
             for file_p in sorted(os.listdir(probe_path)):
+                if sys.getsizeof(join) / 1e6 > memory_limit:  # 2 GiB
+                    # store to file
+                    with open(f"tmp/sort/{save_name}/{count}.pkl", "wb") as f:
+                        pickle.dump(join, f)
+                    count += 1
+                    del join[:]
+
                 with open(f"{probe_path}{file_p}", "rb") as f:
                     probe_r = pickle.load(f)
                 start_idx = 0
@@ -239,9 +250,9 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, keep_key=False,
                     if build_key == "object" and probe_key == "subject":
                         if b_object == p_subject:
                             if keep_key:
-                                yield (*b_subject, b_object, *p_object)
+                                join.append((*b_subject, b_object, *p_object))
                             else:
-                                yield (*b_subject, *p_object)
+                                join.append((*b_subject, *p_object))
                         elif p_subject < b_object:
                             start_idx += 1
                             continue
@@ -251,15 +262,33 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, keep_key=False,
                     elif build_key == "subject" and probe_key == "object":
                         if b_subject == p_object:
                             if keep_key:
-                                yield (*p_subject,  b_subject,  *b_object)
+                                join.append((*p_subject,  b_subject,  *b_object))
                             else:
-                                yield (*p_subject, *b_object)
+                                join.append((*p_subject, *b_object))
                         elif p_object < b_subject:
                             start_idx += 1
                             continue
                         elif b_subject < p_object:
                             break
 
+    with open(f"tmp/sort/{save_name}/{count}.pkl", "wb") as f:
+        pickle.dump(join, f)
+    del join[:]
+    return f"tmp/sort/{save_name}"
+
 
 def sort_join(**kwargs):
     raise NotImplementedError
+    keep_key = True
+    for i in range(1, kwargs["num_joins"] + 1):
+        if i == 1:
+            join = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"],
+                                  kwargs[f"probe_key_{i}"], keep_key=keep_key, step=i)
+        else:
+            join = base_hash_join(last_join, kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
+                                  keep_key=keep_key, step=i)
+            # use base_hash_join again with abitary num of features but only 1 key
+        last_join = join
+
+    # todo how to implement the conjuctions
+    return join
