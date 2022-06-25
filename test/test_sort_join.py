@@ -156,5 +156,70 @@ class TestsortJoin(unittest.TestCase):
             os.rmdir(f"tmp/sort")
 
 
+    def test_sort_join_big(self):
+        os.mkdir("tmp/sort")
+
+        partitions = {}
+        partitions["A"] = [(1, 1) for _ in range(int(1e5))]
+        partitions["B"] = [(1, 1) for _ in range(int(1e5/2))] + [(2, 2) for _ in range(int(1e5/2))]
+        partitions["C"] = [(1, 1) for _ in range(int(1e5/4))]
+
+        # write sorted list to drive
+        for key in partitions:
+            os.mkdir(f"tmp/sort/{key}")
+            os.mkdir(f"tmp/sort/{key}/subject")
+            os.mkdir(f"tmp/sort/{key}/object")
+
+            count = 0
+            for idx, elem in enumerate(sorted(partitions[key], key=lambda tup: tup[0])):
+                with open(f"tmp/sort/{key}/subject/{count}.pkl", "a") as f:
+                    f.write(" ".join(str(x) for x in elem))
+                    f.write("\n")
+                if idx % 1e6 == 0:
+                    count += 1
+
+            count = 0
+            for idx, elem in enumerate(sorted(partitions[key], key=lambda tup: tup[1])):
+                with open(f"tmp/sort/{key}/object/{count}.csv", "a") as f:
+                    f.write(" ".join(str(x) for x in elem))
+                    f.write("\n")
+                if idx % 1e6 == 0:
+                    count += 1
+
+            partitions[key] = {"subject": f"tmp/sort/{key}/subject",
+                               "object": f"tmp/sort/{key}/object"}
+
+        kwargs = {
+            "build_r_1": partitions["A"],
+            "probe_r_1": partitions["B"],
+            "build_key_1": "object",
+            "probe_key_1": "subject",
+            "build_r_2": partitions["B"],
+            "probe_r_2": partitions["C"],
+            "build_key_2": "object",
+            "probe_key_2": "subject",
+            "num_joins": 2
+
+        }
+
+        try:
+            join = sort_join(**kwargs)  # buffer.append((join, sort_table))
+            c = 0
+            for elem in join:
+            #     self.assertIn(elem, res)
+                if c % 1e4 == 0:
+                    print(elem)
+                c += 1
+            self.assertEqual(c, int(1e5/4))
+        finally:
+            for folder in os.listdir("tmp/sort"):
+                for elem in os.listdir(f"tmp/sort/{folder}"):
+                    for file in os.listdir(f"tmp/sort/{folder}/{elem}"):
+                        os.remove(f"tmp/sort/{folder}/{elem}/{file}")
+                    os.rmdir(f"tmp/sort/{folder}/{elem}")
+                os.rmdir(f"tmp/sort/{folder}")
+            os.rmdir(f"tmp/sort")
+
+
 if __name__ == '__main__':
     unittest.main()

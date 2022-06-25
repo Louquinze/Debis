@@ -245,7 +245,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                             f.write(" ".join(str(x) for x in line))
                             f.write("\n")
                     join.sort(key=lambda tup: tup[-1])
-                    with open(f"tmp/sort/{save_name}/object/{count}.csv", "w") as f:  # subject
+                    with open(f"tmp/sort/{save_name}/object/{count}.csv", "w") as f:  # object
                         for line in join:
                             f.write(" ".join(str(x) for x in line))
                             f.write("\n")
