@@ -239,6 +239,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
             for file_p in sorted(os.listdir(probe_path)):
                 if sys.getsizeof(join) / 1e6 > memory_limit:  # 2 GiB
                     # store to file
+                    # Todo merge all the list https://stackoverflow.com/questions/56948292/python-sort-a-large-list-that-doesnt-fit-in-memory
                     join.sort(key=lambda tup: tup[0])
                     with open(f"tmp/sort/{save_name}/subject/{count}.csv", "w") as f:  # subject
                         for line in join:
@@ -301,7 +302,6 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
             f.write(" ".join(str(x) for x in line))
             f.write("\n")
     del join[:]
-    # Todo merge all the list https://stackoverflow.com/questions/56948292/python-sort-a-large-list-that-doesnt-fit-in-memory
 
     return f"tmp/sort/{save_name}"
 
