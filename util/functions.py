@@ -221,6 +221,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, keep_key=False,
         with open(f"{build_path}{file_b}", "rb") as f:
             build_r = pickle.load(f)
         for build_i in build_r:
+            print(build_i)
             if build_key == "subject":
                 b_subject, b_object = build_i[0], build_i[1:]
             elif build_key == "object":
