@@ -219,7 +219,7 @@ def hash_join(**kwargs):
 def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep_key=False, memory_limit=2):
     os.mkdir(f"tmp/sort/{save_name}")
 
-    join = []
+    join = []  # heapq and modify it that i distribute it over the disk
     count = 0
     for file_b in sorted(os.listdir(build_path)):
         with open(f"{build_path}{file_b}", "rb") as f:
@@ -229,7 +229,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
             if build_key == "subject":
                 b_subject, b_object = build_i[0], build_i[1:]
             elif build_key == "object":
-                b_subject, b_object = build_i[:len(build_i)-1], build_i[-1]
+                b_subject, b_object = build_i[:len(build_i) - 1], build_i[-1]
 
             for file_p in sorted(os.listdir(probe_path)):
                 if sys.getsizeof(join) / 1e6 > memory_limit:  # 2 GiB
@@ -247,6 +247,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                         p_subject, p_object = probe_i[0], probe_i[1:]
                     elif probe_key == "object":
                         p_subject, p_object = probe_i[:len(build_i) - 1], probe_i[-1]
+
                     if build_key == "object" and probe_key == "subject":
                         if b_object == p_subject:
                             if keep_key:
@@ -262,7 +263,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                     elif build_key == "subject" and probe_key == "object":
                         if b_subject == p_object:
                             if keep_key:
-                                join.append((*p_subject,  b_subject,  *b_object))
+                                join.append((*p_subject, b_subject, *b_object))
                             else:
                                 join.append((*p_subject, *b_object))
                         elif p_object < b_subject:
@@ -271,24 +272,31 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                         elif b_subject < p_object:
                             break
 
+    # Todo save meta data to dict length for example
     with open(f"tmp/sort/{save_name}/{count}.pkl", "wb") as f:
         pickle.dump(join, f)
     del join[:]
+    # Todo sort the save list memory efficient for subject and object
+
+    #  os.mkdir(f"tmp/sort/{save_name}/subject")
+    #  os.mkdir(f"tmp/sort/{save_name}/object")
     return f"tmp/sort/{save_name}"
 
 
 def sort_join(**kwargs):
-    raise NotImplementedError
     keep_key = True
     for i in range(1, kwargs["num_joins"] + 1):
         if i == 1:
-            join = base_hash_join(kwargs[f"build_r_{i}"], kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"],
-                                  kwargs[f"probe_key_{i}"], keep_key=keep_key, step=i)
+            join_path = base_sort_join(kwargs[f"build_r_{i}"][kwargs[f"build_key_{i}"]],
+                                       kwargs[f"probe_r_{i}"][kwargs[f"probe_key_{i}"]],
+                                       kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
+                                       keep_key=keep_key, step=i)
         else:
-            join = base_hash_join(last_join, kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
-                                  keep_key=keep_key, step=i)
+            join_path = base_sort_join(last_join_path, kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"],
+                                       kwargs[f"probe_key_{i}"],
+                                       keep_key=keep_key, step=i)
             # use base_hash_join again with abitary num of features but only 1 key
-        last_join = join
+        last_join_path = join_path
 
     # todo how to implement the conjuctions
-    return join
+    return join_path

@@ -46,6 +46,8 @@ class TestsortJoin(unittest.TestCase):
             os.rmdir("tmp/sort")
 
     def test_sort_join(self):
+        os.mkdir("tmp/sort")
+
         partitions = dict()
         partitions["follows"] = [
             ("Hannah", "Lukas"),
@@ -74,7 +76,21 @@ class TestsortJoin(unittest.TestCase):
             ("P2", "R2"),
         ]
 
-        # build_r, probe_r, build_key, probe_key
+        # write sorted list to drive
+        for key in partitions:
+            os.mkdir(f"tmp/sort/{key}")
+            os.mkdir(f"tmp/sort/{key}/subject")
+            os.mkdir(f"tmp/sort/{key}/object")
+
+            for idx, elem in enumerate(sorted(partitions[key], key=lambda tup: tup[0])):
+                with open(f"tmp/sort/{key}/subject/{idx}.pkl", "wb") as f:
+                    pickle.dump([elem], f)
+            for idx, elem in enumerate(sorted(partitions[key], key=lambda tup: tup[1])):
+                with open(f"tmp/sort/{key}/object/{idx}.pkl", "wb") as f:
+                    pickle.dump([elem], f)
+            partitions[key] = {"subject": f"tmp/sort/{key}/subject",
+                               "object": f"tmp/sort/{key}/object"}
+
         kwargs = {
             "build_r_1": partitions["follows"],
             "probe_r_1": partitions["friendOf"],
