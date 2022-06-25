@@ -218,29 +218,48 @@ def hash_join(**kwargs):
 
 def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep_key=False, memory_limit=2):
     os.mkdir(f"tmp/sort/{save_name}")
+    os.mkdir(f"tmp/sort/{save_name}/subject")
+    os.mkdir(f"tmp/sort/{save_name}/object")
 
     join = []  # heapq and modify it that i distribute it over the disk
     count = 0
     for file_b in sorted(os.listdir(build_path)):
-        with open(f"{build_path}/{file_b}", "rb") as f:
-            build_r = pickle.load(f)
+        build_r = []
+        with open(f"{build_path}/{file_b}", "r") as f:
+            Lines = f.readlines()
+            for line in Lines:
+                text = line.strip()
+                build_r.append(tuple(text.split(" ")))
+
         for build_i in build_r:
-            print(build_i)
             if build_key == "subject":
                 b_subject, b_object = build_i[0], build_i[1:]
             elif build_key == "object":
                 b_subject, b_object = build_i[:len(build_i) - 1], build_i[-1]
-
+            print(build_path, probe_path)
             for file_p in sorted(os.listdir(probe_path)):
                 if sys.getsizeof(join) / 1e6 > memory_limit:  # 2 GiB
                     # store to file
-                    with open(f"tmp/sort/{save_name}/{count}.pkl", "wb") as f:
-                        pickle.dump(join, f)
+                    join.sort(key=lambda tup: tup[0])
+                    with open(f"tmp/sort/{save_name}/subject/{count}.csv", "w") as f:  # subject
+                        for line in join:
+                            f.write(" ".join(str(x) for x in line))
+                            f.write("\n")
+                    join.sort(key=lambda tup: tup[-1])
+                    with open(f"tmp/sort/{save_name}/object/{count}.csv", "w") as f:  # subject
+                        for line in join:
+                            f.write(" ".join(str(x) for x in line))
+                            f.write("\n")
                     count += 1
                     del join[:]
 
-                with open(f"{probe_path}/{file_p}", "rb") as f:
-                    probe_r = pickle.load(f)
+                probe_r = []
+                with open(f"{probe_path}/{file_p}", "r") as f:
+                    Lines = f.readlines()
+                    for line in Lines:
+                        text = line.strip()
+                        probe_r.append(tuple(text.split(" ")))
+
                 start_idx = 0
                 for probe_i in probe_r[start_idx:]:
                     if probe_key == "subject":
@@ -272,14 +291,18 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                         elif b_subject < p_object:
                             break
 
-    # Todo save meta data to dict length for example
-    with open(f"tmp/sort/{save_name}/{count}.pkl", "wb") as f:
-        pickle.dump(join, f)
+    join.sort(key=lambda tup: tup[0])
+    with open(f"tmp/sort/{save_name}/subject/{count}.csv", "w") as f:  # subject
+        for line in join:
+            f.write(" ".join(str(x) for x in line))
+            f.write("\n")
+    join.sort(key=lambda tup: tup[-1])
+    with open(f"tmp/sort/{save_name}/object/{count}.csv", "w") as f:  # subject
+        for line in join:
+            f.write(" ".join(str(x) for x in line))
+            f.write("\n")
     del join[:]
-    # Todo sort the save list memory efficient for subject and object
 
-    #  os.mkdir(f"tmp/sort/{save_name}/subject")
-    #  os.mkdir(f"tmp/sort/{save_name}/object")
     return f"tmp/sort/{save_name}"
 
 
@@ -292,8 +315,8 @@ def sort_join(**kwargs):
                                        kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
                                        keep_key=keep_key, save_name=i)
         else:
-            join_path = base_sort_join(last_join_path, kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"],
-                                       kwargs[f"probe_key_{i}"],
+            join_path = base_sort_join(last_join_path, kwargs[f"probe_r_{i}"][kwargs[f"probe_key_{i}"]],
+                                       kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
                                        keep_key=keep_key, save_name=i)
             # use base_hash_join again with abitary num of features but only 1 key
         last_join_path = join_path

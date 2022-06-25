@@ -8,45 +8,58 @@ import pickle
 
 class TestsortJoin(unittest.TestCase):
     def test_base_sort_join_1(self):
-        os.mkdir("tmp/b_sort_test_root")
-        os.mkdir("tmp/p_sort_test_root")
         os.mkdir("tmp/sort")
+        os.mkdir("tmp/sort/build")
+        os.mkdir("tmp/sort/probe")
 
-        build_r = "tmp/b_sort_test_root/"
-        probe_r = "tmp/p_sort_test_root/"
+        os.mkdir(f"tmp/sort/build/subject")
+        os.mkdir(f"tmp/sort/build/object")
 
-        with open(f"{build_r}1.pkl", "wb") as f:
-            pickle.dump([(1, 1), (2, 2)], f)
-        with open(f"{build_r}2.pkl", "wb") as f:
-            pickle.dump([(3, 3), (4, 4)], f)
+        os.mkdir(f"tmp/sort/probe/subject")
+        os.mkdir(f"tmp/sort/probe/object")
 
-        with open(f"{probe_r}1.pkl", "wb") as f:
-            pickle.dump([(0, 0), (1, 1)], f)
-        with open(f"{probe_r}2.pkl", "wb") as f:
-            pickle.dump([(2, 2), (3, 3)], f)
+        build_r = f"tmp/sort/build/object/"
+        probe_r = f"tmp/sort/probe/subject/"
+
+        with open(f"{build_r}1.csv", "w") as f:
+            for elem in [(1, 1), (2, 2)]:
+                f.write(" ".join(str(x) for x in elem))
+                f.write("\n")
+        with open(f"{build_r}2.csv", "w") as f:
+            for elem in [(3, 3), (4, 4)]:
+                f.write(" ".join(str(x) for x in elem))
+                f.write("\n")
+
+        with open(f"{probe_r}1.csv", "w") as f:
+            for elem in [(0, 0), (1, 1)]:
+                f.write(" ".join(str(x) for x in elem))
+                f.write("\n")
+        with open(f"{probe_r}2.csv", "w") as f:
+            for elem in [(2, 2), (3, 3)]:
+                f.write(" ".join(str(x) for x in elem))
+                f.write("\n")
 
         try:
             path = base_sort_join(build_r, probe_r, "object", "subject", "test", keep_key=False)
-            with open(f"{path}/0.pkl", "rb") as f:
-                res = pickle.load(f)
+            res = []
+            with open(f"{path}/subject/0.csv", "r") as f:
+                Lines = f.readlines()
+                for line in Lines:
+                    text = line.strip()
+                    res.append(tuple(int(i) for i in text.split(" ")))
+
             self.assertEqual(res, [(1, 1), (2, 2), (3, 3)])  # add assertion here
         finally:
-            for file in os.listdir(build_r):
-                os.remove(f"{build_r}{file}")
-            os.rmdir(build_r)
-
-            for file in os.listdir(probe_r):
-                os.remove(f"{probe_r}{file}")
-            os.rmdir(probe_r)
-
-            for directory in os.listdir("tmp/sort"):
-                for file in os.listdir(f"tmp/sort/{directory}"):
-                    os.remove(f"tmp/sort/{directory}/{file}")
-                os.rmdir(f"tmp/sort/{directory}")
-            os.rmdir("tmp/sort")
+            for folder in os.listdir("tmp/sort"):
+                for elem in os.listdir(f"tmp/sort/{folder}"):
+                    for file in os.listdir(f"tmp/sort/{folder}/{elem}"):
+                        os.remove(f"tmp/sort/{folder}/{elem}/{file}")
+                    os.rmdir(f"tmp/sort/{folder}/{elem}")
+                os.rmdir(f"tmp/sort/{folder}")
+            os.rmdir(f"tmp/sort")
 
     def test_sort_join(self):
-        os.mkdir("tmp/sort")
+        # os.mkdir("tmp/sort")
 
         partitions = dict()
         partitions["follows"] = [
@@ -115,19 +128,21 @@ class TestsortJoin(unittest.TestCase):
             ("Hannah", "Adina", "Lukas", "P0", "R1"),
         ]
         c = 0
-        for elem in join:
-            self.assertIn(elem, res)
-            c += 1
-        self.assertEqual(c, len(res))
+        try:
+            for elem in join:
+                self.assertIn(elem, res)
+                c += 1
+            self.assertEqual(c, len(res))
+        finally:
+            for folder in os.listdir("tmp/sort"):
+                for elem in os.listdir(f"tmp/sort/{folder}"):
+                    for file in os.listdir(f"tmp/sort/{folder}/{elem}"):
+                        os.remove(f"tmp/sort/{folder}/{elem}/{file}")
+                    os.rmdir(f"tmp/sort/{folder}/{elem}")
+                os.rmdir(f"tmp/sort/{folder}")
 
-        for folder in os.listdir("tmp"):
-            if "sort" in folder:
-                for elem in os.listdir(f"tmp/{folder}"):
-                    os.remove(f"tmp/{folder}/{elem}")
-                os.rmdir(f"tmp/{folder}")
-
-        for elem in os.listdir(f"tmp/partitions"):
-            os.remove(f"tmp/partitions/{elem}")
+            for elem in os.listdir(f"tmp/partitions"):
+                os.remove(f"tmp/partitions/{elem}")
 
 
 if __name__ == '__main__':
