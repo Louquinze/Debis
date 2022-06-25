@@ -217,8 +217,42 @@ def hash_join(**kwargs):
 
 
 def base_sort_join(build_r, probe_r, build_key, probe_key, keep_key=False, memory_limit=2, step=0):
-    # sort relations, therefore move only subsets to a sorted list and save sorted sub lists
-    raise NotImplementedError
+    start_idx = 0
+    for build_i in build_r:
+        if build_key == "subject":
+            b_subject, b_object = build_i[0], build_i[1:]
+        elif build_key == "object":
+            b_subject, b_object = build_i[:len(build_i)-1], build_i[-1]
+        for probe_i in probe_r[start_idx:]:
+            if probe_key == "subject":
+                p_subject, p_object = probe_i[0], probe_i[1:]
+            elif probe_key == "object":
+                p_subject, p_object = probe_i[:len(build_i) - 1], probe_i[-1]
+
+
+            if build_key == "object" and probe_key == "subject":
+                if b_object == p_subject:
+                    if keep_key:
+                        yield (*b_subject, b_object, *p_object)
+                    else:
+                        yield (*b_subject, *p_object)
+                elif p_subject < b_object:
+                    start_idx += 1
+                    continue
+                elif b_object < p_subject:
+                    break
+
+            elif build_key == "subject" and probe_key == "object":
+                if b_subject == p_object:
+                    if keep_key:
+                        yield (*p_subject,  b_subject,  *b_object)
+                    else:
+                        yield (*p_subject, *b_object)
+                elif p_object < b_subject:
+                    start_idx += 1
+                    continue
+                elif b_subject < p_object:
+                    break
 
 
 def sort_join(**kwargs):
