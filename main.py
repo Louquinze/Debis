@@ -69,12 +69,3 @@ for elem in join:
         print(elem)
     c += 1
 print(c)
-
-for folder in os.listdir("tmp"):
-    if "hash" in folder:
-        for elem in os.listdir(f"tmp/{folder}"):
-            os.remove(f"tmp/{folder}/{elem}")
-        os.rmdir(f"tmp/{folder}")
-
-for elem in os.listdir(f"tmp/partitions"):
-    os.remove(f"tmp/partitions/{elem}")
