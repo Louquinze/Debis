@@ -222,7 +222,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
     join = []  # heapq and modify it that i distribute it over the disk
     count = 0
     for file_b in sorted(os.listdir(build_path)):
-        with open(f"{build_path}{file_b}", "rb") as f:
+        with open(f"{build_path}/{file_b}", "rb") as f:
             build_r = pickle.load(f)
         for build_i in build_r:
             print(build_i)
@@ -239,7 +239,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                     count += 1
                     del join[:]
 
-                with open(f"{probe_path}{file_p}", "rb") as f:
+                with open(f"{probe_path}/{file_p}", "rb") as f:
                     probe_r = pickle.load(f)
                 start_idx = 0
                 for probe_i in probe_r[start_idx:]:
@@ -290,11 +290,11 @@ def sort_join(**kwargs):
             join_path = base_sort_join(kwargs[f"build_r_{i}"][kwargs[f"build_key_{i}"]],
                                        kwargs[f"probe_r_{i}"][kwargs[f"probe_key_{i}"]],
                                        kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
-                                       keep_key=keep_key, step=i)
+                                       keep_key=keep_key, save_name=i)
         else:
             join_path = base_sort_join(last_join_path, kwargs[f"probe_r_{i}"], kwargs[f"build_key_{i}"],
                                        kwargs[f"probe_key_{i}"],
-                                       keep_key=keep_key, step=i)
+                                       keep_key=keep_key, save_name=i)
             # use base_hash_join again with abitary num of features but only 1 key
         last_join_path = join_path
 
