@@ -76,11 +76,19 @@ if __name__ == '__main__':
         join = hash_join(**kwargs)
 
     last_idx = 0
-    with open(f"result_{args.type}_join_{args.dataset}.csv", "w") as f:
-        f.write("idx,follows.subject,follows.object,friendOf.object,likes.object,hasReview.object\n")
-        for idx, elem in enumerate(join):
-            f.write(f"{idx},{elem[0]},{elem[1]},{elem[2]},{elem[3]},{elem[4]}\n")
-        last_idx = idx
+    if args.type == "sort":
+        for file in os.listdir("tmp/sort/3/subject"):
+            os.system(f"mv tmp/sort/3/subject/{f} result_{args.type}_join_{args.dataset}.csv")
+    else:
+        with open(f"result_{args.type}_join_{args.dataset}.csv", "w") as f:
+            f.write("follows.subject,follows.object,friendOf.object,likes.object,hasReview.object\n")
+            for elem in join:
+                f.write(f"{elem[0]},{elem[1]},{elem[2]},{elem[3]},{elem[4]}\n")
+
+    last_idx = 0
+    with open(f"result_{args.type}_join_{args.dataset}.csv", "r") as f:
+        for _ in f:
+            last_idx += 1
 
     end = time.time()
     delta = end - start
