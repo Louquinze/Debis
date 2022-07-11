@@ -117,7 +117,6 @@ def base_hash_join(build_r, probe_r, build_key, probe_key, keep_key=False, step=
             else:
                 hash_table[object].add(subject)
         # save hash_table to disk if it reaches a certain size
-        print(len(join))
         if sys.getsizeof(hash_table) / 1e6 > memory_limit:  # 2 GiB
             # store to file
             with open(f"tmp/hash_{step}/hash_table_{current_table_idx}.pkl", "wb") as f:

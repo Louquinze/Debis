@@ -16,7 +16,8 @@ parser.add_argument('--dataset', type=str, default="small")  # huge
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    os.mkdir("tmp/sort")
+    if args.type == "sort":
+        os.mkdir("tmp/sort")
     partitions = {}
     for key in ["follows", "friendOf", "likes", "hasReview"]:
         if args.dataset == "huge":
@@ -74,6 +75,11 @@ if __name__ == '__main__':
     else:
         join = hash_join(**kwargs)
 
+    with open(f"result_{args.type}_join_{args.dataset}.csv", "w") as f:
+        f.write("follows.subject,follows.object,friendOf.object,likes.object,hasReview.object\n")
+        for elem in join:
+            f.write(f"{elem[0]},{elem[1]},{elem[2]},{elem[3]},{elem[4]}\n")
+
     end = time.time()
     delta = end - start
     sec = delta % 60
@@ -83,8 +89,3 @@ if __name__ == '__main__':
     print(f"finisehd in {delta}:{min}:{sec}")
     with open("log.text", "a") as f:
         f.write(f"args_{args.type}_{args.dataset}: {delta}:{min}:{sec}\n")
-
-    with open("result_sort_join.csv", "w") as f:
-        f.write("follows.subject,follows.object,friendOf.object,likes.object,hasReview.object\n")
-        for elem in join:
-            f.write(f"{elem[0]},{elem[1]},{elem[2]},{elem[3]},{elem[4]}\n")
