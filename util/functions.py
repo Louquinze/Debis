@@ -224,8 +224,7 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
     count = 0
     for file_b in sorted(os.listdir(build_path)):
         with open(f"{build_path}/{file_b}", "r") as f:
-            Lines = f.readlines()
-            for line in Lines:
+            for line in f:
                 text = line.strip()
                 build_i = tuple(text.split(" "))
 
@@ -273,9 +272,8 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
 
                         print("finished sorting\n")
                     start_idx = 0
-                    with open(f"{probe_path}/{file_p}", "r") as f:
-                        Lines = f.readlines()
-                        for idx, line in enumerate(Lines):
+                    with open(f"{probe_path}/{file_p}", "r") as g:
+                        for idx, line in enumerate(g):
                             if idx < start_idx:
                                 continue
                             text = line.strip()

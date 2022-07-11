@@ -68,7 +68,7 @@ if __name__ == '__main__':
         "build_key_3": "object",
         "probe_key_3": "subject",
         "num_joins": 3,
-        "memory_limit": 0.016
+        "memory_limit": 0.1
     }
     if args.type == "sort":
         join = sort_join(**kwargs)  # buffer.append((join, hash_table))
