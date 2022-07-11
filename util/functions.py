@@ -225,95 +225,92 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
     join = []  # heapq and modify it that i distribute it over the disk
     count = 0
     for file_b in sorted(os.listdir(build_path)):
-        build_r = []
         with open(f"{build_path}/{file_b}", "r") as f:
             Lines = f.readlines()
             for line in Lines:
                 text = line.strip()
-                build_r.append(tuple(text.split(" ")))
-        print(f"build_r: {build_r}")
+                build_i = tuple(text.split(" "))
 
-        for build_i in build_r:
-            if build_key == "subject":
-                b_subject, b_object = build_i[0], build_i[1:]
-            elif build_key == "object":
-                b_subject, b_object = build_i[:len(build_i) - 1], build_i[-1]
+                if build_key == "subject":
+                    b_subject, b_object = build_i[0], build_i[1:]
+                elif build_key == "object":
+                    b_subject, b_object = build_i[:len(build_i) - 1], build_i[-1]
 
-            for file_p in sorted(os.listdir(probe_path)):
-                if sys.getsizeof(join) / 1e6 > memory_limit:  # 2 GiB
-                    # store to file
-                    print("Memory Limit reached: sorte merge subject")
-                    join.sort(key=lambda tup: tup[0])
-                    with open(f"tmp/sort/{save_name}/subject/{count}.csv", "w") as f:  # subject
-                        for line in join:
-                            f.write(" ".join(str(x) for x in line))
-                            f.write("\n")
-                    if count > 0:
-                        chunks = [open(f"tmp/sort/{save_name}/subject/{count - 1}.csv", "r"),
-                                  open(f"tmp/sort/{save_name}/subject/{count}.csv", "r")]
-                        with open(f"tmp/sort/{save_name}/subject/tmp.csv", 'w') as f_out:
-                            f_out.writelines(merge(*chunks, key=lambda k: k.split()[0]))
-                        os.remove(f"tmp/sort/{save_name}/subject/{count - 1}.csv")
-                        os.remove(f"tmp/sort/{save_name}/subject/{count}.csv")
-                        os.rename(f"tmp/sort/{save_name}/subject/tmp.csv", f"tmp/sort/{save_name}/subject/{count}.csv")
+                for file_p in sorted(os.listdir(probe_path)):
+                    if sys.getsizeof(join) / 1e6 > memory_limit:  # 2 GiB
+                        # store to file
+                        print("Memory Limit reached: sorte merge subject")
+                        join.sort(key=lambda tup: tup[0])
+                        with open(f"tmp/sort/{save_name}/subject/{count}.csv", "w") as f:  # subject
+                            for line in join:
+                                f.write(" ".join(str(x) for x in line))
+                                f.write("\n")
+                        if count > 0:
+                            chunks = [open(f"tmp/sort/{save_name}/subject/{count - 1}.csv", "r"),
+                                      open(f"tmp/sort/{save_name}/subject/{count}.csv", "r")]
+                            with open(f"tmp/sort/{save_name}/subject/tmp.csv", 'w') as f_out:
+                                f_out.writelines(merge(*chunks, key=lambda k: k.split()[0]))
+                            os.remove(f"tmp/sort/{save_name}/subject/{count - 1}.csv")
+                            os.remove(f"tmp/sort/{save_name}/subject/{count}.csv")
+                            os.rename(f"tmp/sort/{save_name}/subject/tmp.csv", f"tmp/sort/{save_name}/subject/{count}.csv")
 
-                    print("Memory Limit reached: sorte merge object")
-                    join.sort(key=lambda tup: tup[-1])
-                    with open(f"tmp/sort/{save_name}/object/{count}.csv", "w") as f:  # object
-                        for line in join:
-                            f.write(" ".join(str(x) for x in line))
-                            f.write("\n")
+                        print("Memory Limit reached: sorte merge object")
+                        join.sort(key=lambda tup: tup[-1])
+                        with open(f"tmp/sort/{save_name}/object/{count}.csv", "w") as f:  # object
+                            for line in join:
+                                f.write(" ".join(str(x) for x in line))
+                                f.write("\n")
 
-                    if count > 0:
-                        chunks = [open(f"tmp/sort/{save_name}/object/{count - 1}.csv", "r"),
-                                  open(f"tmp/sort/{save_name}/object/{count}.csv", "r")]
-                        with open(f"tmp/sort/{save_name}/object/tmp.csv", 'w') as f_out:
-                            f_out.writelines(merge(*chunks, key=lambda k: k.split()[-1]))
-                        os.remove(f"tmp/sort/{save_name}/object/{count - 1}.csv")
-                        os.remove(f"tmp/sort/{save_name}/object/{count}.csv")
-                        os.rename(f"tmp/sort/{save_name}/object/tmp.csv", f"tmp/sort/{save_name}/object/{count}.csv")
+                        if count > 0:
+                            chunks = [open(f"tmp/sort/{save_name}/object/{count - 1}.csv", "r"),
+                                      open(f"tmp/sort/{save_name}/object/{count}.csv", "r")]
+                            with open(f"tmp/sort/{save_name}/object/tmp.csv", 'w') as f_out:
+                                f_out.writelines(merge(*chunks, key=lambda k: k.split()[-1]))
+                            os.remove(f"tmp/sort/{save_name}/object/{count - 1}.csv")
+                            os.remove(f"tmp/sort/{save_name}/object/{count}.csv")
+                            os.rename(f"tmp/sort/{save_name}/object/tmp.csv", f"tmp/sort/{save_name}/object/{count}.csv")
 
-                    count += 1
-                    del join[:]
+                        count += 1
+                        del join[:]
 
-                    print("finished sorting\n")
-                probe_r = []
-                with open(f"{probe_path}/{file_p}", "r") as f:
-                    Lines = f.readlines()
-                    for line in Lines:
-                        text = line.strip()
-                        probe_r.append(tuple(text.split(" ")))
+                        print("finished sorting\n")
+                    start_idx = 0
+                    with open(f"{probe_path}/{file_p}", "r") as f:
+                        Lines = f.readlines()
+                        for idx, line in enumerate(Lines):
+                            if idx < start_idx:
+                                continue
+                            text = line.strip()
+                            probe_i = tuple(text.split(" "))
 
-                start_idx = 0
-                for probe_i in probe_r[start_idx:]:
-                    if probe_key == "subject":
-                        p_subject, p_object = probe_i[0], probe_i[1:]
-                    elif probe_key == "object":
-                        p_subject, p_object = probe_i[:len(build_i) - 1], probe_i[-1]
+                            if probe_key == "subject":
+                                p_subject, p_object = probe_i[0], probe_i[1:]
+                            elif probe_key == "object":
+                                p_subject, p_object = probe_i[:len(build_i) - 1], probe_i[-1]
 
-                    if build_key == "object" and probe_key == "subject":
-                        if b_object == p_subject:
-                            if keep_key:
-                                join.append((*b_subject, b_object, *p_object))
-                            else:
-                                join.append((*b_subject, *p_object))
-                        elif p_subject < b_object:
-                            start_idx += 1
-                            continue
-                        elif b_object < p_subject:
-                            break
+                            if build_key == "object" and probe_key == "subject":
+                                if b_object == p_subject:
+                                    if keep_key:
+                                        join.append((*b_subject, b_object, *p_object))
+                                    else:
+                                        join.append((*b_subject, *p_object))
+                                elif p_subject < b_object:
+                                    start_idx += 1
+                                    continue
+                                elif b_object < p_subject:
+                                    break
 
-                    elif build_key == "subject" and probe_key == "object":
-                        if b_subject == p_object:
-                            if keep_key:
-                                join.append((*p_subject, b_subject, *b_object))
-                            else:
-                                join.append((*p_subject, *b_object))
-                        elif p_object < b_subject:
-                            start_idx += 1
-                            continue
-                        elif b_subject < p_object:
-                            break
+                            elif build_key == "subject" and probe_key == "object":
+                                if b_subject == p_object:
+                                    if keep_key:
+                                        join.append((*p_subject, b_subject, *b_object))
+                                    else:
+                                        join.append((*p_subject, *b_object))
+                                elif p_object < b_subject:
+                                    start_idx += 1
+                                    continue
+                                elif b_subject < p_object:
+                                    break
 
     print("Memory Limit reached: sorte merge subject")
     join.sort(key=lambda tup: tup[0])

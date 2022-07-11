@@ -55,13 +55,13 @@ kwargs = {
     "build_key_3": "object",
     "probe_key_3": "subject",
     "num_joins": 3,
-    "memory_limit": 0.5
+    "memory_limit": 0.05
 }
 join = sort_join(**kwargs)  # buffer.append((join, hash_table))
-# with open("result_hash_join.csv", "w") as f:
-#    f.write("follows.subject,follows.object,friendOf.object,likes.object,hasReview.object\n")
-#     for elem in join:
-#         f.write(f"{elem[0]},{elem[1]},{elem[2]},{elem[3]},{elem[4]}\n")
+with open("result_sort_join.csv", "w") as f:
+    f.write("follows.subject,follows.object,friendOf.object,likes.object,hasReview.object\n")
+    for elem in join:
+        f.write(f"{elem[0]},{elem[1]},{elem[2]},{elem[3]},{elem[4]}\n")
 
 c = 0
 for elem in join:
