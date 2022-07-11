@@ -19,9 +19,10 @@ if __name__ == '__main__':
     os.mkdir("tmp/sort")
     partitions = {}
     for key in ["follows", "friendOf", "likes", "hasReview"]:
-        partitions[key] = get_vertical_partitions(key
-                                                  # , "watdiv.10M/watdiv.10M.nt"
-                                                  )
+        if args.dataset == "huge":
+            partitions[key] = get_vertical_partitions(key, "watdiv.10M/watdiv.10M.nt")
+        else:
+            partitions[key] = get_vertical_partitions(key)
     # _______________________________________________________________________________________________________________________
     start = time.time()
     if args.dataset == "huge":
