@@ -39,7 +39,7 @@ if __name__ == '__main__':
                 with open(f"tmp/sort/{key}/subject/{count}.csv", "a") as f:
                     f.write(" ".join(str(x) for x in elem))
                     f.write("\n")
-                if idx % 1e6 == 0:
+                if (idx + 1) % 1e7 == 0:
                     count += 1
 
             count = 0
@@ -48,7 +48,7 @@ if __name__ == '__main__':
                 with open(f"tmp/sort/{key}/object/{count}.csv", "a") as f:
                     f.write(" ".join(str(x) for x in elem))
                     f.write("\n")
-                if idx % 1e6 == 0:
+                if (idx + 1) % 1e7 == 0:
                     count += 1
 
             partitions[key] = {"subject": f"tmp/sort/{key}/subject",
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         "build_key_3": "object",
         "probe_key_3": "subject",
         "num_joins": 3,
-        "memory_limit": 0.1
+        "memory_limit": 10  # 10 GiB RAM
     }
     if args.type == "sort":
         join = sort_join(**kwargs)  # buffer.append((join, hash_table))

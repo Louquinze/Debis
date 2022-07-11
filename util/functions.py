@@ -223,8 +223,13 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
     join = []  # heapq and modify it that i distribute it over the disk
     count = 0
     for file_b in sorted(os.listdir(build_path)):
+        c_tot = 0
         with open(f"{build_path}/{file_b}", "r") as f:
-            for line in f:
+            for _ in f:
+                c_tot += 1
+        with open(f"{build_path}/{file_b}", "r") as f:
+            for c, line in enumerate(f):
+                print(f"{100*c/c_tot}%\n")
                 text = line.strip()
                 build_i = tuple(text.split(" "))
 
