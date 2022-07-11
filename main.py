@@ -75,10 +75,12 @@ if __name__ == '__main__':
     else:
         join = hash_join(**kwargs)
 
+    last_idx = 0
     with open(f"result_{args.type}_join_{args.dataset}.csv", "w") as f:
-        f.write("follows.subject,follows.object,friendOf.object,likes.object,hasReview.object\n")
-        for elem in join:
-            f.write(f"{elem[0]},{elem[1]},{elem[2]},{elem[3]},{elem[4]}\n")
+        f.write("idx,follows.subject,follows.object,friendOf.object,likes.object,hasReview.object\n")
+        for idx, elem in enumerate(join):
+            f.write(f"{idx},{elem[0]},{elem[1]},{elem[2]},{elem[3]},{elem[4]}\n")
+        last_idx = idx
 
     end = time.time()
     delta = end - start
@@ -87,5 +89,6 @@ if __name__ == '__main__':
     min = delta % 60
     delta = delta // 60
     print(f"finisehd in {delta}:{min}:{sec}")
-    with open("log.text", "a") as f:
-        f.write(f"args_{args.type}_{args.dataset}: {delta}:{min}:{sec}\n")
+    with open(f"result_{args.type}_join_{args.dataset}.txt", "w") as f:
+        f.write(f"args_{args.type}_{args.dataset}: {delta}:{min}:{sec}\n"
+                f"idx: {last_idx}\n\n")
