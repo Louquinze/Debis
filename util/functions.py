@@ -213,7 +213,6 @@ def hash_join(**kwargs):
             # use base_hash_join again with abitary num of features but only 1 key
         last_join = join
 
-    # todo how to implement the conjuctions
     return join
 
 
