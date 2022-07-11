@@ -26,7 +26,7 @@ if __name__ == '__main__':
             partitions[key] = get_vertical_partitions(key)
     # _______________________________________________________________________________________________________________________
     start = time.time()
-    if args.dataset == "huge":
+    if args.type == "sort":
         for key in partitions:
             os.mkdir(f"tmp/sort/{key}")
             os.mkdir(f"tmp/sort/{key}/subject")
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         "build_key_3": "object",
         "probe_key_3": "subject",
         "num_joins": 3,
-        "memory_limit": 0.05
+        "memory_limit": 0.016
     }
     if args.type == "sort":
         join = sort_join(**kwargs)  # buffer.append((join, hash_table))
