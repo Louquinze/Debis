@@ -11,8 +11,8 @@ import datetime
 warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('type', type=str, default="hash")  # sort
-parser.add_argument('dataset', type=str, default="small")  # huge
+parser.add_argument('--type', type=str, default="hash")  # sort
+parser.add_argument('--dataset', type=str, default="small")  # huge
 
 if __name__ == '__main__':
     args = parser.parse_args()
