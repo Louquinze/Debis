@@ -2,7 +2,7 @@ import os
 import argparse
 
 from util.functions import get_user_properties, get_vertical_partitions, base_hash_join, hash_join, base_sort_join, \
-    sort_join
+    sort_join, sort_parallel_join
 
 import warnings
 import time
@@ -16,7 +16,7 @@ parser.add_argument('--dataset', type=str, default="small")  # huge
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    if args.type == "sort":
+    if args.type in ["sort", "sort_parallel"]:
         os.mkdir("tmp/sort")
     partitions = {}
     for key in ["follows", "friendOf", "likes", "hasReview"]:
@@ -26,7 +26,7 @@ if __name__ == '__main__':
             partitions[key] = get_vertical_partitions(key)
     # _______________________________________________________________________________________________________________________
     start = time.time()
-    if args.type == "sort":
+    if args.type in ["sort", "sort_parallel"]:
         for key in partitions:
             os.mkdir(f"tmp/sort/{key}")
             os.mkdir(f"tmp/sort/{key}/subject")
@@ -68,15 +68,17 @@ if __name__ == '__main__':
         "build_key_3": "object",
         "probe_key_3": "subject",
         "num_joins": 3,
-        "memory_limit": 10  # 10 GiB RAM
+        "memory_limit": 2  # 10 GiB RAM
     }
     if args.type == "sort":
         join = sort_join(**kwargs)  # buffer.append((join, hash_table))
+    elif args.type == "sort_parallel":
+        join = sort_parallel_join(**kwargs)
     else:
         join = hash_join(**kwargs)
 
     last_idx = 0
-    if args.type == "sort":
+    if args.type in ["sort", "sort_parallel"]:
         for file in os.listdir("tmp/sort/3/subject"):
             os.system(f"mv tmp/sort/3/subject/{f} result_{args.type}_join_{args.dataset}.csv")
     else:

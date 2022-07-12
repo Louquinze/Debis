@@ -3,6 +3,7 @@ import sys
 import os
 import pickle
 from heapq import merge
+import multiprocessing as mp
 
 
 def get_user_properties():
@@ -224,12 +225,14 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
     count = 0
     for file_b in sorted(os.listdir(build_path)):
         c_tot = 0
+        with open("log.txt", "a") as f:
+            f.write(f"{build_path}/{file_b}\n")
         with open(f"{build_path}/{file_b}", "r") as f:
             for _ in f:
                 c_tot += 1
         with open(f"{build_path}/{file_b}", "r") as f:
             for c, line in enumerate(f):
-                print(f"{100*c/c_tot}%\n")
+                print(f"{100 * c / c_tot}%\n")
                 text = line.strip()
                 build_i = tuple(text.split(" "))
 
@@ -254,7 +257,8 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                                 f_out.writelines(merge(*chunks, key=lambda k: k.split()[0]))
                             os.remove(f"tmp/sort/{save_name}/subject/{count - 1}.csv")
                             os.remove(f"tmp/sort/{save_name}/subject/{count}.csv")
-                            os.rename(f"tmp/sort/{save_name}/subject/tmp.csv", f"tmp/sort/{save_name}/subject/{count}.csv")
+                            os.rename(f"tmp/sort/{save_name}/subject/tmp.csv",
+                                      f"tmp/sort/{save_name}/subject/{count}.csv")
 
                         print("Memory Limit reached: sorte merge object")
                         join.sort(key=lambda tup: tup[-1])
@@ -270,7 +274,8 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
                                 f_out.writelines(merge(*chunks, key=lambda k: k.split()[-1]))
                             os.remove(f"tmp/sort/{save_name}/object/{count - 1}.csv")
                             os.remove(f"tmp/sort/{save_name}/object/{count}.csv")
-                            os.rename(f"tmp/sort/{save_name}/object/tmp.csv", f"tmp/sort/{save_name}/object/{count}.csv")
+                            os.rename(f"tmp/sort/{save_name}/object/tmp.csv",
+                                      f"tmp/sort/{save_name}/object/{count}.csv")
 
                         count += 1
                         del join[:]
@@ -350,6 +355,145 @@ def base_sort_join(build_path, probe_path, build_key, probe_key, save_name, keep
     return f"tmp/sort/{save_name}"
 
 
+def base_sort_parallel_join(build_path, probe_path, build_key, probe_key, save_name, keep_key=False, memory_limit=2):
+    os.mkdir(f"tmp/sort/{save_name}")
+    os.mkdir(f"tmp/sort/{save_name}/subject")
+    os.mkdir(f"tmp/sort/{save_name}/object")
+
+    join = []  # heapq and modify it that i distribute it over the disk
+    count = 0
+    file_b = os.listdir(build_path)[0]
+    file_b += f"/{os.listdir(file_b)[0]}"
+    c_tot = 0
+    with open(f"{build_path}/{file_b}", "r") as f:
+        for _ in f:
+            c_tot += 1
+    with open(f"{build_path}/{file_b}", "r") as f:
+        for c, line in enumerate(f):
+            print(f"{100 * c / c_tot}%\n")
+            text = line.strip()
+            build_i = tuple(text.split(" "))
+
+            if build_key == "subject":
+                b_subject, b_object = build_i[0], build_i[1:]
+            elif build_key == "object":
+                b_subject, b_object = build_i[:len(build_i) - 1], build_i[-1]
+
+            file_p = os.listdir(probe_path)[0]
+            file_p += f"/{os.listdir(file_p)[0]}"
+            if sys.getsizeof(join) / 1e6 > memory_limit:  # 2 GiB
+                # store to file
+                print("Memory Limit reached: sorte merge subject")
+                join.sort(key=lambda tup: tup[0])
+                with open(f"tmp/sort/{save_name}/subject/{count}.csv", "w") as f:  # subject
+                    for line in join:
+                        f.write(" ".join(str(x) for x in line))
+                        f.write("\n")
+                if count > 0:
+                    chunks = [open(f"tmp/sort/{save_name}/subject/{count - 1}.csv", "r"),
+                              open(f"tmp/sort/{save_name}/subject/{count}.csv", "r")]
+                    with open(f"tmp/sort/{save_name}/subject/tmp.csv", 'w') as f_out:
+                        f_out.writelines(merge(*chunks, key=lambda k: k.split()[0]))
+                    os.remove(f"tmp/sort/{save_name}/subject/{count - 1}.csv")
+                    os.remove(f"tmp/sort/{save_name}/subject/{count}.csv")
+                    os.rename(f"tmp/sort/{save_name}/subject/tmp.csv",
+                              f"tmp/sort/{save_name}/subject/{count}.csv")
+
+                print("Memory Limit reached: sorte merge object")
+                join.sort(key=lambda tup: tup[-1])
+                with open(f"tmp/sort/{save_name}/object/{count}.csv", "w") as f:  # object
+                    for line in join:
+                        f.write(" ".join(str(x) for x in line))
+                        f.write("\n")
+
+                if count > 0:
+                    chunks = [open(f"tmp/sort/{save_name}/object/{count - 1}.csv", "r"),
+                              open(f"tmp/sort/{save_name}/object/{count}.csv", "r")]
+                    with open(f"tmp/sort/{save_name}/object/tmp.csv", 'w') as f_out:
+                        f_out.writelines(merge(*chunks, key=lambda k: k.split()[-1]))
+                    os.remove(f"tmp/sort/{save_name}/object/{count - 1}.csv")
+                    os.remove(f"tmp/sort/{save_name}/object/{count}.csv")
+                    os.rename(f"tmp/sort/{save_name}/object/tmp.csv",
+                              f"tmp/sort/{save_name}/object/{count}.csv")
+
+                count += 1
+                del join[:]
+
+                print("finished sorting\n")
+            start_idx = 0
+            with open(f"{probe_path}/{file_p}", "r") as g:
+                for idx, line in enumerate(g):
+                    if idx < start_idx:
+                        continue
+                    text = line.strip()
+                    probe_i = tuple(text.split(" "))
+
+                    if probe_key == "subject":
+                        p_subject, p_object = probe_i[0], probe_i[1:]
+                    elif probe_key == "object":
+                        p_subject, p_object = probe_i[:len(build_i) - 1], probe_i[-1]
+
+                    if build_key == "object" and probe_key == "subject":
+                        if b_object == p_subject:
+                            if keep_key:
+                                join.append((*b_subject, b_object, *p_object))
+                            else:
+                                join.append((*b_subject, *p_object))
+                        elif p_subject < b_object:
+                            start_idx += 1
+                            continue
+                        elif b_object < p_subject:
+                            break
+
+                    elif build_key == "subject" and probe_key == "object":
+                        if b_subject == p_object:
+                            if keep_key:
+                                join.append((*p_subject, b_subject, *b_object))
+                            else:
+                                join.append((*p_subject, *b_object))
+                        elif p_object < b_subject:
+                            start_idx += 1
+                            continue
+                        elif b_subject < p_object:
+                            break
+
+    print("Memory Limit reached: sorte merge subject")
+    join.sort(key=lambda tup: tup[0])
+    with open(f"tmp/sort/{save_name}/subject/{count}.csv", "w") as f:  # subject
+        for line in join:
+            f.write(" ".join(str(x) for x in line))
+            f.write("\n")
+    if count > 0:
+        chunks = [open(f"tmp/sort/{save_name}/subject/{count - 1}.csv", "r"),
+                  open(f"tmp/sort/{save_name}/subject/{count}.csv", "r")]
+        with open(f"tmp/sort/{save_name}/subject/tmp.csv", 'w') as f_out:
+            f_out.writelines(merge(*chunks, key=lambda k: k.split()[0]))
+        os.remove(f"tmp/sort/{save_name}/subject/{count - 1}.csv")
+        os.remove(f"tmp/sort/{save_name}/subject/{count}.csv")
+        os.rename(f"tmp/sort/{save_name}/subject/tmp.csv", f"tmp/sort/{save_name}/subject/{count}.csv")
+
+    print("Memory Limit reached: sorte merge object")
+    join.sort(key=lambda tup: tup[-1])
+    with open(f"tmp/sort/{save_name}/object/{count}.csv", "w") as f:  # object
+        for line in join:
+            f.write(" ".join(str(x) for x in line))
+            f.write("\n")
+
+    if count > 0:
+        chunks = [open(f"tmp/sort/{save_name}/object/{count - 1}.csv", "r"),
+                  open(f"tmp/sort/{save_name}/object/{count}.csv", "r")]
+        with open(f"tmp/sort/{save_name}/object/tmp.csv", 'w') as f_out:
+            f_out.writelines(merge(*chunks, key=lambda k: k.split()[-1]))
+        os.remove(f"tmp/sort/{save_name}/object/{count - 1}.csv")
+        os.remove(f"tmp/sort/{save_name}/object/{count}.csv")
+        os.rename(f"tmp/sort/{save_name}/object/tmp.csv", f"tmp/sort/{save_name}/object/{count}.csv")
+
+    count += 1
+    del join[:]
+
+    return f"tmp/sort/{save_name}"
+
+
 def sort_join(**kwargs):
     keep_key = True
     for i in range(1, kwargs["num_joins"] + 1):
@@ -368,3 +512,24 @@ def sort_join(**kwargs):
 
     # todo how to implement the conjuctions
     return join_path
+
+
+def sort_parallel_join(**kwargs):
+    keep_key = True
+    pool = mp.Pool(mp.cpu_count())
+
+    results = pool.starmap(base_sort_join, [(kwargs[f"build_r_{i}"][kwargs[f"build_key_{i}"]],
+                                             kwargs[f"probe_r_{i}"][kwargs[f"probe_key_{i}"]],
+                                             kwargs[f"build_key_{i}"], kwargs[f"probe_key_{i}"],
+                                             i, keep_key, kwargs["memory_limit"]) for
+                                            i in range(1, kwargs["num_joins"] + 1)])
+    print(results)
+    if len(results) > 1:
+        results = pool.starmap(base_sort_join, [(results[idx]+"/object",
+                                                 results[idx + 1]+"/subject",
+                                                 "object", "subject",
+                                                 hash(path), keep_key, kwargs["memory_limit"]) for
+                                                idx, path in enumerate(results[:len(results)-1])])
+
+    # todo how to implement the conjuctions
+    return results[0]
