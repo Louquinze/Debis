@@ -14,12 +14,25 @@ os.system("rm -r tmp")
 os.system("mkdir tmp")
 
 os.system("mkdir res_3")
-os.system("python main.py --type hash --dataset huge")
+os.system("python main.py --type sort-parallel --dataset small")
 os.system("mv tmp/3/subject/*csv res_3")
 os.system("rm -r tmp")
 os.system("mkdir tmp")
 
 os.system("mkdir res_4")
-os.system("python main.py --type sort --dataset huge")
+os.system("python main.py --type hash --dataset huge")
 os.system("mv tmp/3/subject/*csv res_4")
 os.system("rm -r tmp")
+os.system("mkdir tmp")
+
+"""
+os.system("mkdir res_5")
+os.system("python main.py --type sort --dataset huge")
+os.system("mv tmp/3/subject/*csv res_5")
+os.system("rm -r tmp")
+
+os.system("mkdir res_6")
+os.system("python main.py --type sort-parallel --dataset huge")
+os.system("mv tmp/3/subject/*csv res_6")
+os.system("rm -r tmp")
+"""
